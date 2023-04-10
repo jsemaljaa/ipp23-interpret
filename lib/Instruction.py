@@ -1,4 +1,3 @@
-from lib.Argument import Argument
 from lib.ReturnCodes import ReturnCodes as RC
 from lib.Frame import Frame
 from lib.DataTypes import *

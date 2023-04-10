@@ -54,8 +54,5 @@ class XMLParse:
         for i in self.__instructions.get_list():
             i.print()
 
-        print("\n\n\n")
-        print(self.__instructions.get_size())
-
     def get_instructions(self):
         return self.__instructions
