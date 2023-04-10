@@ -1,0 +1,46 @@
+1) instructions with no arguments:
+	  CREATEFRAME
+      PUSHFRAME
+      POPFRAME
+      RETURN
+      BREAK
+2) instructions with 1 argument:
+	a) argument is Variable
+		DEFVAR  
+		POPS
+	b) argument is Symbol (Variable or Const)
+		PUSHS   
+        WRITE
+        EXIT
+        DPRINT
+	c) argument is Label
+		CALL   
+        LABEL
+        JUMP
+3) instructions with 2 arguments:
+	a) Variable, Symbol
+		INT2CHAR
+        STRLEN
+        TYPE
+        MOVE
+        NOT
+	b) Variable, Type
+		READ
+4) instructions with 3 arguments:
+	a) Variable, Symbol, Symbol
+		CONCAT     
+        GETCHAR
+        SETCHAR
+        STRI2INT
+        ADD
+        SUB
+        MUL
+        IDIV
+        LT
+        GT
+        EQ
+        AND
+        OR
+	b) Label, Symbol, Symbol
+		JUMPIFEQ
+        JUMPIFNEQ
