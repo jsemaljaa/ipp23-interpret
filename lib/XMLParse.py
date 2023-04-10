@@ -3,6 +3,7 @@ from lib.Instruction import *
 from lib.ReturnCodes import ReturnCodes as RC
 from lib.InstructionsList import InstructionsList
 
+
 class XMLParse:
 
     def __init__(self, path):
@@ -37,22 +38,22 @@ class XMLParse:
 
     def __collect_instructions(self):
         for e in self.__root:
-            givenInst = e.attrib['opcode'].upper()
-            givenOrder = int(e.attrib['order'])
-            if givenInst in knownInstructions:
-                inst = knownInstructions[givenInst](givenOrder)
+            instruction = e.attrib['opcode'].upper()
+            order = int(e.attrib['order'])
+            if instruction in knownInstructions:
+                inst = knownInstructions[instruction](order)
             else:
                 RC().exit_e(RC.BAD_XML_TREE)
 
             for sub in e:
-                inst.add_argument(sub.attrib['type'], sub.text)
+                instruction.add_argument(sub.attrib['type'], sub.text)
 
-            self.__instructions.append(inst)
+            self.__instructions.append(instruction)
             # inst.print()
 
     def __print_instructions_list(self):
         for i in self.__instructions.get_list():
             i.print()
 
-    def get_instructions(self):
+    def get_instructions(self) -> InstructionsList:
         return self.__instructions

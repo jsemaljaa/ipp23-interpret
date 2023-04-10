@@ -40,6 +40,7 @@ class Symbol:
     def value(self, value):
         self._value = value
 
+
 class Const(Symbol):
 
     def __init__(self, type, value):
@@ -48,7 +49,6 @@ class Const(Symbol):
     def print(self):
         print("\t\tConst: type " + self.type +
               "\n\t\tvalue: " + str(self.value))
-
 
 
 class Variable(Symbol):
@@ -61,6 +61,10 @@ class Variable(Symbol):
     def __init__(self, id, type, value, frame):
         super().__init__(type, value, id)
         self.__frame = frame
+
+    @property
+    def frame(self):
+        return self.__frame
 
     def print(self):
         print("\t\tVariable name: " + self.id +

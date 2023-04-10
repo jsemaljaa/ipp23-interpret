@@ -82,7 +82,7 @@ class ReturnCodes:
             case self.BAD_XML_TREE:
                 sys.stderr.write("Given XML file has unexpected XML structure")
             case self.SEMANTIC:
-                sys.stderr.write("Semantic analysis failed")
+                sys.stderr.write("Semantic")
             case self.OPERAND_TYPE:
                 sys.stderr.write("Bad operands types")
             case self.UNDEFINED_VARIABLE:

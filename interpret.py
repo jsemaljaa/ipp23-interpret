@@ -11,6 +11,7 @@ from lib.XMLParse import XMLParse
 from lib.Stack import Stack
 from lib.Frame import Frame
 from lib.DataTypes import *
+from lib.Instruction import *
 
 
 aparser = argparse.ArgumentParser()
@@ -48,12 +49,12 @@ class Interpret:
         self.__gframe = Frame()
         self.__tframe = None
         self.__frames = Stack()
-        self.__XML = None
-        self.__instructions = []
-        self.__datastack = Stack()
 
-        self.get_instructions_list()
-        # self.parse_instructions()
+        self.__datastack = Stack()
+        self.__labels = {}
+
+        self.__get_instructions_list()
+        self.__interpret_start()
 
     """
     START BLOCK: FRAMES OPERATIONS
@@ -94,7 +95,7 @@ class Interpret:
         self.__tframe = self.__get_top_lframe()
         self.__frames.pop()
 
-    def get_frame(self, f: str) -> Frame | None:
+    def __get_frame(self, f: str) -> Frame | None:
         if f == 'GF':
             return self.__gframe
         elif f == 'LF':
@@ -103,6 +104,10 @@ class Interpret:
             return self.__get_tframe()
         else:
             return None
+
+    @staticmethod
+    def __update_variable(self, f: Frame, var: Variable):
+        f.update_var(var)
     """
     END BLOCK: FRAMES OPERATIONS
     """
@@ -120,12 +125,12 @@ class Interpret:
     START BLOCK: INTERPRET BODY
     """
 
-    def get_instructions_list(self):
+    def __get_instructions_list(self):
         # Get XML representation
-        self.__XML = XMLParse(sourcePath)
+        XML = XMLParse(sourcePath)
 
         # Get list of all instructions
-        self.__instructions = self.__XML.get_instructions()
+        self.__instructions = XML.get_instructions()
 
         # self.__instructions here is an Object with type InstructionsList
         """
@@ -133,6 +138,60 @@ class Interpret:
         """
 
     def __interpret_start(self):
+        while True:
+            instruction = self.__instructions.get_next_instruction()
+
+            if instruction is None:
+                break
+
+            if type(instruction) is CREATEFRAME:
+                self.__delete_frame()
+                self.__create_frame()
+            elif type(instruction) is PUSHFRAME:
+                self.__push_frame()
+            elif type(instruction) is POPFRAME:
+                self.__pop_frame()
+            elif type(instruction) is RETURN:
+                self.__instructions.return_pos()
+            elif type(instruction) is BREAK:
+                pass
+            elif type(instruction) is DEFVAR:
+                var = instruction.args[0]
+                if isinstance(var, Variable):
+                    # var.id, var.frame
+                    frame = self.__get_frame(var.frame)
+                    if frame.contains(var.id):
+                        RC().exit_e(RC.SEMANTIC)
+                    else:
+                        frame.define_var(var)
+            elif type(instruction) is POPS:
+                var = instruction.args[0]
+                frame = self.__get_frame(var.frame)
+                if self.__datastack.is_empty():
+                    RC().exit_e(RC.MISSING_VALUE)
+                else:
+                    symb = self.__datastack.pop()
+                    frame.update_var(symb.type, symb.value, var.id)
+            elif type(instruction) is PUSHS:
+                symb = instruction.args[0]
+                self.__datastack.push(symb)
+            elif type(instruction) is WRITE:
+                symb = instruction.args[0]
+                print(symb.value, end='')
+            elif type(instruction) is EXIT:
+                pass
+            elif type(instruction) is DPRINT:
+                pass
+            elif type(instruction) is CALL:
+                pass
+            elif type(instruction) is LABEL:
+                label = instruction.args[0]
+                if label in self.__labels:
+                    RC().exit_e(RC.SEMANTIC)
+                else:
+                    self.__labels[label] = self.__instructions.pos
+            elif type(instruction) is JUMP:
+                pass
 
 
 interpret = Interpret()

@@ -1,34 +1,44 @@
-from lib.Instruction import Instruction
-from lib.Stack import Stack
+from Instruction import Instruction, LABEL
+from Stack import Stack
+from ReturnCodes import ReturnCodes as RC
+
 
 class InstructionsList:
     def __init__(self):
         self.__list = []
-        self.__counter = 0
-        self.__current = 1
+        self.__size = 0
+        self.__pos = 1
         self.__callStack = Stack()
-        self.__labels = []
+        self.__labels = {}
 
-    def get_list(self):
+    @property
+    def pos(self):
+        return self.__pos
+
+    @property
+    def size(self):
+        return self.__size
+
+    @property
+    def list(self):
         return self.__list
 
-    def get_size(self):
-        return self.__counter
-
     def append(self, i: Instruction):
-        self.__counter += 1
+        self.__size += 1
         self.__list.append(i)
 
-    def get_next_instruction(self) -> Instruction:
-        if self.__current <= self.__counter:
-            self.__current += 1
-            return self.__list[self.__current]
+    def get_next_instruction(self) -> Instruction | None:
+        if self.__pos <= self.__size:
+            self.__pos += 1
+            return self.__list[self.__pos]
+        else:
+            return None
 
-    def add_position(self):
-        self.__callStack.push(self.__current)
+    def store_pos(self):
+        self.__callStack.push(self.__pos)
 
-    def get_position(self):
-        if not self.__callStack.is_empty():
-            self.__current = self.__callStack.pop()
-        # else:
-        # error with empty callstack
+    def return_pos(self):
+        if self.__callStack.is_empty():
+            RC().exit_e(RC.MISSING_VALUE)
+        else:
+            self.__pos = self.__callStack.pop()
