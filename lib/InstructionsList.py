@@ -1,5 +1,5 @@
-from interpret_classes.Instruction import Instruction
-from interpret_classes.Stack import Stack
+from lib.Instruction import Instruction
+from lib.Stack import Stack
 
 class InstructionsList:
     def __init__(self):
@@ -9,9 +9,15 @@ class InstructionsList:
         self.__callStack = Stack()
         self.__labels = []
 
+    def get_list(self):
+        return self.__list
+
+    def get_size(self):
+        return self.__counter
+
     def append(self, i: Instruction):
         self.__counter += 1
-        self.__list[self.__counter] = i
+        self.__list.append(i)
 
     def get_next_instruction(self) -> Instruction:
         if self.__current <= self.__counter:
@@ -26,6 +32,3 @@ class InstructionsList:
             self.__current = self.__callStack.pop()
         # else:
         # error with empty callstack
-
-
-

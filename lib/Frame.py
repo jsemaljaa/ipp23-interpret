@@ -1,4 +1,5 @@
-from interpret_classes.Variable import Variable
+from lib.DataTypes import *
+
 
 class Frame:
 

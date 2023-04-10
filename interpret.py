@@ -6,14 +6,12 @@ import codecs
 import re
 
 # Implemented libraries with classes
-from interpret_classes.ReturnCodes import ReturnCodes as RC
-from interpret_classes.XMLParse import XMLParse
-from interpret_classes.Stack import Stack
-from interpret_classes.Frame import Frame
-from interpret_classes.Variable import Variable
-from interpret_classes.Const import Const
-from interpret_classes.Symbol import Symbol
-from interpret_classes.Argument import Argument
+from lib.ReturnCodes import ReturnCodes as RC
+from lib.XMLParse import XMLParse
+from lib.Stack import Stack
+from lib.Frame import Frame
+from lib.DataTypes import *
+from lib.Argument import Argument
 
 
 aparser = argparse.ArgumentParser()

@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as et # !!!
-from interpret_classes.Instruction import Instruction
-from interpret_classes.ReturnCodes import ReturnCodes as RC
-
+from lib.Instruction import *
+from lib.ReturnCodes import ReturnCodes as RC
+from lib.InstructionsList import InstructionsList
 
 class XMLParse:
 
@@ -9,10 +9,11 @@ class XMLParse:
         self.__tree = None
         self.__root = None
         self.__path = path
-        self.__instructions = []
+        self.__instructions = InstructionsList()
 
         self.__check_tree()
         self.__collect_instructions()
+        self.__print_instructions_list()
 
     def __check_tree(self):
         try:
@@ -36,14 +37,25 @@ class XMLParse:
 
     def __collect_instructions(self):
         for e in self.__root:
-            inst = Instruction(e.attrib['opcode'], int(e.attrib['order']))
-            inst.print()
+            givenInst = e.attrib['opcode'].upper()
+            givenOrder = int(e.attrib['order'])
+            if givenInst in knownInstructions:
+                inst = knownInstructions[givenInst](givenOrder)
+            else:
+                RC().exit_e(RC.BAD_XML_TREE)
+
             for sub in e:
                 inst.add_argument(sub.attrib['type'], sub.text)
-            inst.print_args()
 
-            # List of instructions as a result
             self.__instructions.append(inst)
+            # inst.print()
+
+    def __print_instructions_list(self):
+        for i in self.__instructions.get_list():
+            i.print()
+
+        print("\n\n\n")
+        print(self.__instructions.get_size())
 
     def get_instructions(self):
         return self.__instructions
