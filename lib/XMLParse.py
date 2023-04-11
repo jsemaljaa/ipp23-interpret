@@ -14,7 +14,7 @@ class XMLParse:
 
         self.__check_tree()
         self.__collect_instructions()
-        self.__print_instructions_list()
+        # self.__print_instructions_list()
 
     def __check_tree(self):
         try:
@@ -46,13 +46,14 @@ class XMLParse:
                 RC().exit_e(RC.BAD_XML_TREE)
 
             for sub in e:
-                instruction.add_argument(sub.attrib['type'], sub.text)
+                inst.add_argument(sub.attrib['type'], sub.text)
 
-            self.__instructions.append(instruction)
+            inst.check_instruction_arguments()
+            self.__instructions.append(inst)
             # inst.print()
 
     def __print_instructions_list(self):
-        for i in self.__instructions.get_list():
+        for i in self.__instructions.list:
             i.print()
 
     def get_instructions(self) -> InstructionsList:

@@ -1,6 +1,6 @@
-from Instruction import Instruction, LABEL
-from Stack import Stack
-from ReturnCodes import ReturnCodes as RC
+from lib.Instruction import Instruction
+from lib.DataStructures import Stack
+from lib.ReturnCodes import ReturnCodes as RC
 
 
 class InstructionsList:
@@ -14,6 +14,13 @@ class InstructionsList:
     @property
     def pos(self):
         return self.__pos
+
+    @pos.setter
+    def pos(self, new_pos: int):
+        if new_pos <= 0:
+            RC().exit_e(RC.SEMANTIC)
+        else:
+            self.__pos = new_pos
 
     @property
     def size(self):

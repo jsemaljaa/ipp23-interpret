@@ -1,12 +1,20 @@
 from lib.ReturnCodes import ReturnCodes as RC
-from lib.Frame import Frame
-from lib.DataTypes import *
+from lib.DataStructures import *
 
 class Instruction:
     def __init__(self, order: int) -> None:
         self.__order = order
         self.__args = []
         self.__check_order()
+        self.__required = []
+
+    @property
+    def required(self):
+        return self.__required
+
+    @required.setter
+    def required(self, req: list):
+        self.__required = req
 
     @property
     def order(self):
@@ -31,243 +39,251 @@ class Instruction:
         arg = None
         if type == 'var':
             frame, id = value.split("@")
-            arg = Variable(id, None, None, frame)
+            arg = Variable(id=id, type=None, value=None, frame=frame)
         elif type == 'label':
-            arg = Symbol('label', value)
-        else:
-            if type in ['int', 'bool', 'string', 'nil']:
-                arg = Const(type, value)
+            arg = Label(id=value)
+        elif type == 'int':
+            arg = Const(type=type, value=int(value))
+        elif type == 'bool':
+            if value == 'true':
+                arg = Const(type=type, value=True)
             else:
+                arg = Const(type=type, value=False)
+        elif type == 'string':
+            arg = Const(type=type, value=str(value))
+        elif type == 'nil':
+            if value != 'nil':
                 RC().exit_e(RC.BAD_XML_TREE)
+            else:
+                arg = Const(type=type, value=value)
+        elif type == 'type':
+            arg = Type(value=value)
+        else:
+            RC().exit_e(RC.BAD_XML_TREE)
 
-        if arg is None:
-            exit(1)
         self.__args.append(arg)
 
     def __check_order(self):
-        if self.order < 1:
+        if not isinstance(self.order, int) or self.order < 1:
             RC().exit_e(RC.BAD_XML_TREE)
 
-    def _check_args(self, num: int):
-        if len(self.args) != num:
-            # TODO: check if error return code is correct
-            RC().exit_e(RC.SEMANTIC)
-
-    @staticmethod
-    def _check_variable(a):
-        if not isinstance(a, Variable):
-            RC().exit_e(RC.SEMANTIC)
-
-    @staticmethod
-    def _check_symb(s):
-        if not isinstance(s, Symbol):
-            RC().exit_e(RC.SEMANTIC)
-
-    @staticmethod
-    def _check_const(c):
-        if not isinstance(c, Const):
-            RC().exit_e(RC.SEMANTIC)
-
-    def _check_label(self, l):
-        self._check_symb(l)
-        if l.type != 'label':
-            RC().exit_e(RC.SEMANTIC)
+    def check_instruction_arguments(self):
+        if len(self.args) != len(self.required):
+            RC().exit_e(RC.BAD_XML_TREE)
+        i = 0
+        for arg in self.args:
+            if isinstance(arg, self.required[i]): # noqa
+                i += 1
+            else:
+                RC().exit_e(RC.SEMANTIC)
 
 
-class ZeroArgumentInst(Instruction):
+class CREATEFRAME(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = []
 
 
-class OneArgumentInst(Instruction):
-    # inst = OneArgumentInst(name, order)
+class PUSHFRAME(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = []
 
 
-class TwoArgumentInst(Instruction):
+class POPFRAME(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = []
 
 
-class ThreeArgumentInst(Instruction):
+class RETURN(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = []
 
 
-class CREATEFRAME(ZeroArgumentInst):
+class BREAK(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = []
 
 
-class PUSHFRAME(ZeroArgumentInst):
+class DEFVAR(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable]
 
-
-class POPFRAME(ZeroArgumentInst):
+class POPS(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable]
 
 
-class RETURN(ZeroArgumentInst):
+class PUSHS(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Symbol]
 
 
-class BREAK(ZeroArgumentInst):
+class WRITE(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Symbol]
 
 
-class DEFVAR(OneArgumentInst):
+class EXIT(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Symbol]
 
 
-class POPS(OneArgumentInst):
+class DPRINT(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Symbol]
 
 
-class PUSHS(OneArgumentInst):
+class CALL(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Label]
 
 
-class WRITE(OneArgumentInst):
+class LABEL(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Label]
 
 
-class EXIT(OneArgumentInst):
+class JUMP(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Label]
 
 
-class DPRINT(OneArgumentInst):
+class INT2CHAR(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol]
 
-
-class CALL(OneArgumentInst):
+class STRLEN(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol]
 
 
-class LABEL(OneArgumentInst):
+class TYPE(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol]
 
 
-class JUMP(OneArgumentInst):
+class MOVE(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol]
 
 
-class INT2CHAR(TwoArgumentInst):
+class NOT(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol]
 
 
-class STRLEN(TwoArgumentInst):
+class READ(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Type]
 
 
-class TYPE(TwoArgumentInst):
+class CONCAT(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol, Symbol]
 
 
-class MOVE(TwoArgumentInst):
+class GETCHAR(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol, Symbol]
 
 
-class NOT(TwoArgumentInst):
+class SETCHAR(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol, Symbol]
 
 
-class READ(TwoArgumentInst):
+class STRI2INT(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol, Symbol]
 
 
-class CONCAT(ThreeArgumentInst):
+class ADD(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol, Symbol]
 
 
-class GETCHAR(ThreeArgumentInst):
+class SUB(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol, Symbol]
 
 
-class SETCHAR(ThreeArgumentInst):
+class MUL(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol, Symbol]
 
 
-class STRI2INT(ThreeArgumentInst):
+class IDIV(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol, Symbol]
 
 
-class ADD(ThreeArgumentInst):
+class LT(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol, Symbol]
 
 
-class SUB(ThreeArgumentInst):
+class GT(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol, Symbol]
 
 
-class MUL(ThreeArgumentInst):
+class EQ(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol, Symbol]
 
 
-class IDIV(ThreeArgumentInst):
+class AND(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol, Symbol]
 
 
-class LT(ThreeArgumentInst):
+class OR(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Variable, Symbol, Symbol]
 
 
-class GT(ThreeArgumentInst):
+class JUMPIFEQ(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Label, Symbol, Symbol]
 
-
-class EQ(ThreeArgumentInst):
+class JUMPIFNEQ(Instruction):
     def __init__(self, order):
         super().__init__(order)
+        self.required = [Label, Symbol, Symbol]
 
-
-class AND(ThreeArgumentInst):
-    def __init__(self, order):
-        super().__init__(order)
-
-
-class OR(ThreeArgumentInst):
-    def __init__(self, order):
-        super().__init__(order)
-
-
-class JUMPIFEQ(ThreeArgumentInst):
-    def __init__(self, order):
-        super().__init__(order)
-
-
-class JUMPIFNEQ(ThreeArgumentInst):
-    def __init__(self, order):
-        super().__init__(order)
 
 knownInstructions = {
     "CREATEFRAME": CREATEFRAME,

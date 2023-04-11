@@ -65,11 +65,10 @@ class ReturnCodes:
         pass
 
     def exit_e(self, code):
-        if code != self.SUCCESS:
-            sys.stderr.write("Error! ")
-        else:
+        if code >= 0 or code <= 49:
             exit(code)
 
+        sys.stderr.write("Error! ")
         match code:
             case self.BAD_ARGUMENT:
                 sys.stderr.write("Missing script parameter or forbidden parameter combination found")
