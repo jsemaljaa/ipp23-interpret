@@ -21,22 +21,12 @@ if args['input'] is None and args['source'] is None:
     RC.exit_e(RC.BAD_ARGUMENT)
 else:
     if args['input'] is None:
-        fileInput = ""
-        # print("*** WAITING FOR INPUT ***")
-        # while True:
-        #     fileInput = sys.stdin.read()
-        #     if "\n" == fileInput:
-        #         break
+        fileInput = input()
     else:
-        fileInput = args['input']
+        fileInput = args['input'][0]
 
     if args['source'] is None:
-        sourcePath = ""
-        # print("*** WAITING FOR SOURCE ***")
-        # while True:
-        #     sourcePath = sys.stdin.read()
-        #     if "\n" == sourcePath:
-        #         break
+        sourcePath = input()
     else:
         sourcePath = args['source'][0]
 
@@ -148,15 +138,19 @@ class Interpret:
         # Get list of all instructions
         self.__instructions = XML.get_instructions()
 
+        # self.__instructions.print()
+
         # self.__instructions here is an Object with type InstructionsList
         """
         END BLOCK: INTERPRET BODY
         """
 
     def __interpret_start(self):
+
         while True:
             instruction = self.__instructions.get_next_instruction()
 
+            # instruction.print()
             if instruction is None:
                 break
 
@@ -201,7 +195,14 @@ class Interpret:
 
             elif type(instruction) is WRITE:
                 symb = instruction.args[0]
-                print(symb.value, end='')
+                if isinstance(symb, Variable):
+                    frame = self.__get_frame(symb.frame)
+                    if not frame.contains(symb.id):
+                        RC().exit_e(RC.UNDEFINED_VARIABLE)
+                    var = frame.get_var(symb.id)
+                    print(var.value, end='')
+                else:
+                    print(symb.value, end='')
 
             elif type(instruction) is EXIT:
                 symb = instruction.args[0]
@@ -213,12 +214,15 @@ class Interpret:
                     RC().exit_e(int(symb.value))
 
             elif type(instruction) is DPRINT:
-                self.__check_instruction_arguments(instruction.args, [Variable])
                 symb = instruction.args[0]
-                frame = self.__get_frame(symb.frame)
-                if not frame.contains(symb.id):
-                    RC().exit_e(RC.UNDEFINED_VARIABLE)
-                sys.stderr.write(str(symb.value))
+                if isinstance(symb, Variable):
+                    frame = self.__get_frame(symb.frame)
+                    if not frame.contains(symb.id):
+                        RC().exit_e(RC.UNDEFINED_VARIABLE)
+                    symb = frame.get_var(symb.id)
+                    sys.stderr.write(str(symb.value))
+                else:
+                    sys.stderr.write(str(symb.value))
 
             elif type(instruction) is CALL:
                 self.__instructions.store_pos()
@@ -237,7 +241,6 @@ class Interpret:
                 self.__jump_to(label)
 
             elif type(instruction) is INT2CHAR:
-                self.__check_instruction_arguments(instruction.args, [Variable, Symbol])
                 var = instruction.args[0]
                 symb = instruction.args[1]
                 if symb.type != 'int':
@@ -251,7 +254,6 @@ class Interpret:
                 frame.update_var(var.type, var.value, var.id)
 
             elif type(instruction) is STRLEN:
-                self.__check_instruction_arguments(instruction.args, [Variable, Symbol])
                 var = instruction.args[0]
                 symb = instruction.args[1]
                 if symb.type != 'string':
@@ -262,7 +264,6 @@ class Interpret:
                 frame.update_var(var.type, var.value, var.id)
 
             elif type(instruction) is TYPE:
-                self.__check_instruction_arguments(instruction.args, [Variable, Symbol])
                 var = instruction.args[0]
                 symb = instruction.args[1]
                 frame = self.__get_frame(var.frame)
@@ -286,14 +287,13 @@ class Interpret:
                     frame.update_var(var.type, var.value, var.id)
 
             elif type(instruction) is MOVE:
-                self.__check_instruction_arguments(instruction.args, [Variable, Symbol])
                 var = instruction.args[0]
                 symb = instruction.args[1]
                 frame = self.__get_frame(var.frame)
                 if not frame.contains(var.id):
                     RC().exit_e(RC.UNDEFINED_VARIABLE)
                 if isinstance(symb, Const):
-                    frame.update_var(symb.value, symb.type, var.id)
+                    frame.update_var(symb.type, symb.value, var.id)
                 elif isinstance(symb, Variable):
                     symbFrame = self.__get_frame(symb.frame)
                     if not symbFrame.contains(symb.id):
@@ -301,11 +301,11 @@ class Interpret:
                     else:
                         symb = symbFrame.get_var(symb.id)
                         frame.update_var(symb.type, symb.value, var.id)
+
             elif type(instruction) is READ:
                 pass
 
             elif type(instruction) is NOT:
-                self.__check_instruction_arguments(instruction.args, [Variable, Symbol])
                 var = instruction.args[0]
                 symb = instruction.args[1]
                 if symb.type != 'bool':
@@ -320,13 +320,5 @@ class Interpret:
                     else:
                         var.value = True
                     frame.update_var(var.type, var.value, var.id)
-
-
-
-
-
-
-
-
 
 interpret = Interpret()

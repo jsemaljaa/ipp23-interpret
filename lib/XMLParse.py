@@ -11,10 +11,15 @@ class XMLParse:
         self.__root = None
         self.__path = path
         self.__instructions = InstructionsList()
+        self.__knownOrders = []
 
         self.__check_tree()
         self.__collect_instructions()
         # self.__print_instructions_list()
+
+    def __check_order(self, order: int):
+        if order in self.__knownOrders:
+            RC().exit_e(RC.BAD_XML_TREE)
 
     def __check_tree(self):
         try:
@@ -39,22 +44,33 @@ class XMLParse:
     def __collect_instructions(self):
         for e in self.__root:
             instruction = e.attrib['opcode'].upper()
-            order = int(e.attrib['order'])
+            order = e.attrib['order']
+            self.__knownOrders.append(order)
             if instruction in knownInstructions:
                 inst = knownInstructions[instruction](order)
             else:
                 RC().exit_e(RC.BAD_XML_TREE)
 
             for sub in e:
-                inst.add_argument(sub.attrib['type'], sub.text)
+                if sub.tag == 'arg1':
+                    inst.add_argument(1, sub.attrib['type'], sub.text)
+                elif sub.tag == 'arg2':
+                    inst.add_argument(2, sub.attrib['type'], sub.text)
+                elif sub.tag == 'arg3':
+                    inst.add_argument(1, sub.attrib['type'], sub.text)
+                else:
+                    RC().exit_e(RC.BAD_XML_TREE)
 
             inst.check_instruction_arguments()
             self.__instructions.append(inst)
             # inst.print()
 
-    def __print_instructions_list(self):
-        for i in self.__instructions.list:
-            i.print()
+        # for e in self.__root:
+        #     print(e.attrib)
+        #     for sub in e:
+        #         if sub.tag == 'arg1':
+        #             print("AAAAAAA")
+        #         print(sub.tag)
 
     def get_instructions(self) -> InstructionsList:
         return self.__instructions

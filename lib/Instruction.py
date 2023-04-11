@@ -26,16 +26,16 @@ class Instruction:
 
     def print(self):
         print("Instruction: " + str(type(self)) + " with order: " + str(self.__order))
-        self.print_args()
+        self.__print_args()
 
-    def print_args(self):
+    def __print_args(self):
         i = 1
         for a in self.args:
             print("\t" + str(i) + ". type: " + str(type(a)))
             a.print()
             i += 1
 
-    def add_argument(self, type, value):
+    def add_argument(self, order: int, type, value):
         arg = None
         if type == 'var':
             frame, id = value.split("@")
@@ -50,6 +50,8 @@ class Instruction:
             else:
                 arg = Const(type=type, value=False)
         elif type == 'string':
+            if value is None:
+                value = ''
             arg = Const(type=type, value=str(value))
         elif type == 'nil':
             if value != 'nil':
@@ -61,7 +63,8 @@ class Instruction:
         else:
             RC().exit_e(RC.BAD_XML_TREE)
 
-        self.__args.append(arg)
+        # self.__args.append(arg)
+        self.__args.insert(order - 1, arg)
 
     def __check_order(self):
         if not isinstance(self.order, int) or self.order < 1:

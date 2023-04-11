@@ -1,4 +1,5 @@
 from lib.ReturnCodes import ReturnCodes as RC
+import re
 
 
 class Symbol:
@@ -63,6 +64,9 @@ class Const(Symbol):
 
     def __init__(self, type, value):
         super().__init__(type=type, value=value)
+        # if type == 'string':
+            # self.value.encode().decode("utf-8", "strict")
+            # print(self.value)
 
     def print(self):
         print("\t\tConst: type " + self.type +
@@ -122,8 +126,11 @@ class Frame:
         self.__items = []
 
     def print(self):
+        n = 1
         for i in self.__items:
+            print(n)
             i.print()
+            n += 1
 
     # Returns size of the frame
     def size(self):
