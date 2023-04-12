@@ -115,6 +115,12 @@ class Stack:
     def is_empty(self):
         return self.size() == 0
 
+    def print(self):
+        print("\t-- stack bottom")
+        for i in self.__items:
+            i.print()
+        print("\tstack top --")
+
 
 class Frame:
 
@@ -137,7 +143,10 @@ class Frame:
         return len(self.__items)
 
     def define_var(self, var: Variable):
-        self.__items.append(var)
+        if not self.contains(var.id):
+            self.__items.append(var)
+        else:
+            RC().exit_e(RC.SEMANTIC)
 
     def contains(self, id: str) -> True | False:
         for var in self.__items:
@@ -146,9 +155,12 @@ class Frame:
         return False
 
     def get_var(self, id: str) -> Variable:
-        for i in self.__items:
-            if i.id == id:
-                return i
+        if self.contains(id):
+            for i in self.__items:
+                if i.id == id:
+                    return i
+        else:
+            RC().exit_e(RC.UNDEFINED_VARIABLE)
 
     def update_var(self, type, value, id=None):
         if self.contains(id):

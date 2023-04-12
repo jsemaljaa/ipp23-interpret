@@ -17,34 +17,37 @@ class XMLParse:
         self.__collect_instructions()
         # self.__print_instructions_list()
 
-    def __check_order(self, order: int):
-        if order in self.__knownOrders:
-            RC().exit_e(RC.BAD_XML_TREE)
+    def __order_exists(self, order: int) -> True | False:
+        return order in self.__knownOrders
 
     def __check_tree(self):
         try:
             self.__tree = et.parse(self.__path)
             self.__check_root()
         except (FileNotFoundError, Exception):
-            RC().exit_e(RC.BAD_XML_TREE)
+            RC().exit_e(RC.NOT_WF_XML)
 
     def __check_root(self):
         try:
             self.__root = self.__tree.getroot()
             if (self.__root.tag != 'program') or ('language' not in self.__root.attrib):
-                RC().exit_e(RC.NOT_WF_XML)
+                RC().exit_e(RC.BAD_XML_TREE)
             for attr in self.__root.attrib:
                 if attr not in ['language', 'name', 'description']:
                     RC().exit_e(RC.BAD_XML_TREE)
             if self.__root.attrib['language'].upper() != 'IPPCODE23':
-                RC().exit_e(RC.NOT_WF_XML)
+                RC().exit_e(RC.BAD_XML_TREE)
         except Exception:
-            RC().exit_e(RC.NOT_WF_XML)
+            RC().exit_e(RC.BAD_XML_TREE)
 
     def __collect_instructions(self):
         for e in self.__root:
+            if e.tag != 'instruction' or 'order' not in e.attrib or 'opcode' not in e.attrib:
+                RC().exit_e(RC.BAD_XML_TREE)
             instruction = e.attrib['opcode'].upper()
-            order = e.attrib['order']
+            order = int(e.attrib['order'])
+            if self.__order_exists(order):
+                RC().exit_e(RC.BAD_XML_TREE)
             self.__knownOrders.append(order)
             if instruction in knownInstructions:
                 inst = knownInstructions[instruction](order)
@@ -62,15 +65,11 @@ class XMLParse:
                     RC().exit_e(RC.BAD_XML_TREE)
 
             inst.check_instruction_arguments()
+            if type(inst) is LABEL:
+                self.__instructions.save_label(inst.args[0], inst.order)
+
             self.__instructions.append(inst)
             # inst.print()
-
-        # for e in self.__root:
-        #     print(e.attrib)
-        #     for sub in e:
-        #         if sub.tag == 'arg1':
-        #             print("AAAAAAA")
-        #         print(sub.tag)
 
     def get_instructions(self) -> InstructionsList:
         return self.__instructions

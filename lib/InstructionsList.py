@@ -5,11 +5,15 @@ from lib.ReturnCodes import ReturnCodes as RC
 
 class InstructionsList:
     def __init__(self):
-        self.__list = []
-        self.__size = 0
-        self.__pos = 0
+        self.__list = {}
+        self.__counter = 0
+        self.__pos = 1
         self.__callStack = Stack()
         self.__labels = {}
+
+    @property
+    def labels(self):
+        return self.__labels
 
     @property
     def pos(self):
@@ -23,28 +27,31 @@ class InstructionsList:
             self.__pos = new_pos
 
     @property
-    def size(self):
-        return self.__size
-
-    @property
     def list(self):
         return self.__list
 
+    def save_label(self, label, pos: int):
+        if label.id in self.__labels:
+            RC().exit_e(RC.SEMANTIC)
+        else:
+            self.__labels[label.id] = pos
+
     def append(self, i: Instruction):
-        self.__size += 1
-        self.__list.append(i)
+        self.__counter += 1
+        self.__list[i.order-1] = i
 
     def print(self):
-        for i in self.__list:
-            i.print()
+        print(list(self.__list.values()))
 
     def get_next_instruction(self) -> Instruction | None:
         # print("pos is " + str(self.__pos) + " size is " + str(self.__size))
-        if self.__pos >= self.__size:
+        # print(self.__list[1])
+        if self.__pos > len(self.__list):
             return None
         else:
+            instruction = list(self.__list.values())[self.__pos-1]
             self.__pos += 1
-            return self.__list[self.__pos - 1]
+            return instruction
 
     def store_pos(self):
         self.__callStack.push(self.__pos)

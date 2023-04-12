@@ -61,38 +61,57 @@ class ReturnCodes:
     BAD_STRING = 58
     SUCCESS = 0
 
+    knownCodes = [
+        BAD_ARGUMENT,
+        BAD_INPUT_FILE,
+        BAD_OUTPUT_FILE,
+        NOT_WF_XML,
+        BAD_XML_TREE,
+        SEMANTIC,
+        OPERAND_TYPE,
+        UNDEFINED_VARIABLE,
+        UNDEFINED_FRAME,
+        MISSING_VALUE,
+        OPERAND_VALUE,
+        BAD_STRING,
+        SUCCESS
+    ]
+
     def __init__(self):
         pass
 
     def exit_e(self, code):
-        if code >= 0 or code <= 49:
+        if code not in self.knownCodes:
+            # print("code " + str(code))
             exit(code)
+        # if code >= 0 or code <= 49:
+
 
         sys.stderr.write("Error! ")
         match code:
             case self.BAD_ARGUMENT:
-                sys.stderr.write("Missing script parameter or forbidden parameter combination found")
+                sys.stderr.write("Missing script parameter or forbidden parameter combination found\n")
             case self.BAD_INPUT_FILE:
-                sys.stderr.write("Failed to open an input file")
+                sys.stderr.write("Failed to open an input file\n")
             case self.BAD_OUTPUT_FILE:
-                sys.stderr.write("Failed to open an output file")
+                sys.stderr.write("Failed to open an output file\n")
             case self.NOT_WF_XML:
-                sys.stderr.write("Given XML file is not well-formed")
+                sys.stderr.write("Given XML file is not well-formed\n")
             case self.BAD_XML_TREE:
-                sys.stderr.write("Given XML file has unexpected XML structure")
+                sys.stderr.write("Given XML file has unexpected XML structure\n")
             case self.SEMANTIC:
-                sys.stderr.write("Semantic")
+                sys.stderr.write("Semantic\n")
             case self.OPERAND_TYPE:
-                sys.stderr.write("Bad operands types")
+                sys.stderr.write("Bad operands types\n")
             case self.UNDEFINED_VARIABLE:
-                sys.stderr.write("Trying to access a non-existent variable")
+                sys.stderr.write("Trying to access a non-existent variable\n")
             case self.UNDEFINED_FRAME:
-                sys.stderr.write("Trying to access a non-existent frame")
+                sys.stderr.write("Trying to access a non-existent frame\n")
             case self.MISSING_VALUE:
-                sys.stderr.write("Missing value (either in variable, data stack or call stack)")
+                sys.stderr.write("Missing value (either in variable, data stack or call stack)\n")
             case self.OPERAND_VALUE:
-                sys.stderr.write("Wrong operand value")
+                sys.stderr.write("Wrong operand value\n")
             case self.BAD_STRING:
-                sys.stderr.write("Wrong string operation")
+                sys.stderr.write("Wrong string operation\n")
 
         exit(code)

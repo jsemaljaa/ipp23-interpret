@@ -25,7 +25,7 @@
         + MOVE
         + NOT
 	b) Variable, Type
-		- READ
+		+ READ
 4) instructions with 3 arguments:
 	a) Variable, Symbol, Symbol
 		- CONCAT

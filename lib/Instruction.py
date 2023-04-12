@@ -46,9 +46,9 @@ class Instruction:
             arg = Const(type=type, value=int(value))
         elif type == 'bool':
             if value == 'true':
-                arg = Const(type=type, value=True)
+                arg = Const(type=type, value='true')
             else:
-                arg = Const(type=type, value=False)
+                arg = Const(type=type, value='false')
         elif type == 'string':
             if value is None:
                 value = ''
@@ -64,7 +64,7 @@ class Instruction:
             RC().exit_e(RC.BAD_XML_TREE)
 
         # self.__args.append(arg)
-        self.__args.insert(order - 1, arg)
+        self.__args.insert(order-1, arg)
 
     def __check_order(self):
         if not isinstance(self.order, int) or self.order < 1:
