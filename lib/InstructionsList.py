@@ -41,7 +41,8 @@ class InstructionsList:
         self.__list[i.order-1] = i
 
     def print(self):
-        print(list(self.__list.values()))
+        d = dict(sorted(self.__list.items()))
+        print(list(d.values()))
 
     def get_next_instruction(self) -> Instruction | None:
         # print("pos is " + str(self.__pos) + " size is " + str(self.__size))
@@ -49,7 +50,8 @@ class InstructionsList:
         if self.__pos > len(self.__list):
             return None
         else:
-            instruction = list(self.__list.values())[self.__pos-1]
+            d = dict(sorted(self.__list.items()))
+            instruction = list(d.values())[self.__pos-1]
             self.__pos += 1
             return instruction
 
