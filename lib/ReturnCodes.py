@@ -59,7 +59,6 @@ class ReturnCodes:
     MISSING_VALUE = 56
     OPERAND_VALUE = 57
     BAD_STRING = 58
-    SUCCESS = 0
 
     knownCodes = [
         BAD_ARGUMENT,
@@ -73,8 +72,7 @@ class ReturnCodes:
         UNDEFINED_FRAME,
         MISSING_VALUE,
         OPERAND_VALUE,
-        BAD_STRING,
-        SUCCESS
+        BAD_STRING
     ]
 
     def __init__(self):
@@ -84,8 +82,6 @@ class ReturnCodes:
         if code not in self.knownCodes:
             # print("code " + str(code))
             exit(code)
-        # if code >= 0 or code <= 49:
-
 
         sys.stderr.write("Error! ")
         match code:

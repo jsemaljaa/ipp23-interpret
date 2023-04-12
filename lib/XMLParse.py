@@ -12,6 +12,7 @@ class XMLParse:
         self.__path = path
         self.__instructions = InstructionsList()
         self.__knownOrders = []
+        self.__args = {}
 
         self.__check_tree()
         self.__collect_instructions()
@@ -45,7 +46,10 @@ class XMLParse:
             if e.tag != 'instruction' or 'order' not in e.attrib or 'opcode' not in e.attrib:
                 RC().exit_e(RC.BAD_XML_TREE)
             instruction = e.attrib['opcode'].upper()
-            order = int(e.attrib['order'])
+            try:
+                order = int(e.attrib['order'])
+            except ValueError:
+                RC().exit_e(RC.BAD_XML_TREE)
             if self.__order_exists(order):
                 RC().exit_e(RC.BAD_XML_TREE)
             self.__knownOrders.append(order)
@@ -55,21 +59,22 @@ class XMLParse:
                 RC().exit_e(RC.BAD_XML_TREE)
 
             for sub in e:
-                if sub.tag == 'arg1':
-                    inst.add_argument(1, sub.attrib['type'], sub.text)
-                elif sub.tag == 'arg2':
-                    inst.add_argument(2, sub.attrib['type'], sub.text)
-                elif sub.tag == 'arg3':
-                    inst.add_argument(1, sub.attrib['type'], sub.text)
-                else:
+                if not sub.tag.startswith('arg') or sub.tag[3] not in ['1', '2', '3']:
                     RC().exit_e(RC.BAD_XML_TREE)
+                # print(sub.tag[3])
+                self.__args[int(sub.tag[3])] = inst.process_arg(sub.attrib['type'], sub.text)
+
+            d = dict(sorted(self.__args.items()))
+            if 1 not in d and len(d) != 0:
+                RC().exit_e(RC.BAD_XML_TREE)
+            inst.add_args_list(list(d.values()))
 
             inst.check_instruction_arguments()
-            if type(inst) is LABEL:
-                self.__instructions.save_label(inst.args[0], inst.order)
 
             self.__instructions.append(inst)
+            self.__args = {}
             # inst.print()
 
     def get_instructions(self) -> InstructionsList:
+
         return self.__instructions

@@ -28,18 +28,18 @@
 		+ READ
 4) instructions with 3 arguments:
 	a) Variable, Symbol, Symbol
-		- CONCAT
-        - GETCHAR
-        - SETCHAR
-        - STRI2INT
-        - ADD
-        - SUB
-        - MUL
-        - IDIV
-        - LT
-        - GT
-        - EQ
-        - AND, OR
+		+ CONCAT
+        + GETCHAR
+        + SETCHAR
+        + STRI2INT
+        + ADD
+        + SUB
+        + MUL
+        + IDIV
+        + LT
+        + GT
+        + EQ
+        + AND, OR
 	b) Label, Symbol, Symbol
 		- JUMPIFEQ
         - JUMPIFNEQ

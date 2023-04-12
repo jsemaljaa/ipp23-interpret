@@ -1,4 +1,4 @@
-from lib.Instruction import Instruction
+from lib.Instruction import Instruction, LABEL
 from lib.DataStructures import Stack
 from lib.ReturnCodes import ReturnCodes as RC
 
@@ -30,19 +30,20 @@ class InstructionsList:
     def list(self):
         return self.__list
 
-    def save_label(self, label, pos: int):
-        if label.id in self.__labels:
-            RC().exit_e(RC.SEMANTIC)
-        else:
-            self.__labels[label.id] = pos
-
     def append(self, i: Instruction):
         self.__counter += 1
+        if type(i) is LABEL:
+            if i.args[0].id in self.__labels:
+                RC().exit_e(RC.SEMANTIC)
+            self.__labels[i.args[0].id] = self.__counter
         self.__list[i.order-1] = i
 
     def print(self):
+        print(self.__list)
+
+    def transform_list(self):
         d = dict(sorted(self.__list.items()))
-        print(list(d.values()))
+        self.__list = list(d.values())
 
     def get_next_instruction(self) -> Instruction | None:
         # print("pos is " + str(self.__pos) + " size is " + str(self.__size))
@@ -50,8 +51,7 @@ class InstructionsList:
         if self.__pos > len(self.__list):
             return None
         else:
-            d = dict(sorted(self.__list.items()))
-            instruction = list(d.values())[self.__pos-1]
+            instruction = self.__list[self.__pos-1]
             self.__pos += 1
             return instruction
 

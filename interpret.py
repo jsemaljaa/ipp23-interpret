@@ -12,8 +12,6 @@ from lib.DataStructures import *
 from lib.Instruction import *
 
 
-
-
 class Interpret:
     def __init__(self):
         self.__gframe = Frame()
@@ -112,7 +110,37 @@ class Interpret:
         return label in self.__labels
 
     def __jump_to(self, label: str):
-        self.__instructions.pos = self.__instructions.labels[label]
+        if label in self.__instructions.labels:
+            self.__instructions.pos = self.__instructions.labels[label]
+        else:
+            RC().exit_e(RC.SEMANTIC)
+
+    def __update_symbol(self, arg: Symbol) -> Symbol:
+        if isinstance(arg, Variable):
+            arg = self.__get_variable(arg)
+
+        return arg
+
+    def __get_variable(self, arg: Variable) -> Variable:
+        frame = self.__get_frame(arg.frame)
+        # frame.get_var(arg.id).print()
+        return frame.get_var(arg.id)
+
+    def __set_variable(self, v: Variable):
+        frame = self.__get_frame(v.frame)
+        frame.update_var(v.type, v.value, v.id)
+
+    @staticmethod
+    def __process_string(s: str) -> str:
+        pattern = re.compile(r'(\\[0-9]{3})', re.UNICODE)
+        result = ''
+
+        for c in pattern.split(s):
+            if pattern.match(c):
+                c = chr(int(c[1:]))
+            result += c
+
+        return result
 
     """
     END BLOCK: OPCODE ARGUMENTS
@@ -128,7 +156,7 @@ class Interpret:
 
         # Get list of all instructions
         self.__instructions = XML.get_instructions()
-
+        self.__instructions.transform_list()
         # self.__instructions.print()
 
         # self.__instructions here is an Object with type InstructionsList
@@ -164,47 +192,43 @@ class Interpret:
 
             elif type(instruction) is DEFVAR:
                 var = instruction.args[0]
-                if isinstance(var, Variable):
-                    # var.id, var.frame
-                    frame = self.__get_frame(var.frame)
-                    frame.define_var(var)
+                frame = self.__get_frame(var.frame)
+                frame.define_var(var)
 
             elif type(instruction) is POPS:
                 if self.__datastack.is_empty():
                     RC().exit_e(RC.MISSING_VALUE)
                 else:
-                    var = instruction.args[0]
-                    frame = self.__get_frame(var.frame)
+                    var = self.__get_variable(instruction.args[0])
                     symb = self.__datastack.pop()
-                    frame.update_var(symb.type, symb.value, var.id)
+                    var.value = symb.value
+                    var.type = symb.type
+                    self.__set_variable(var)
 
             elif type(instruction) is PUSHS:
-                symb = instruction.args[0]
-                self.__datastack.push(symb)
-                # self.__datastack.print()
+                symb = self.__update_symbol(instruction.args[0])
+                obj = Const(symb.type, symb.value)
+                self.__datastack.push(obj)
 
             elif type(instruction) is WRITE:
-                symb = instruction.args[0]
-                if isinstance(symb, Variable):
-                    frame = self.__get_frame(symb.frame)
-                    symb = frame.get_var(symb.id)
-
+                symb = self.__update_symbol(instruction.args[0])
+                if symb.type == 'nil':
+                    symb.value = ''
+                if symb.type == 'string':
+                    symb.value = self.__process_string(symb.value)
                 print(symb.value, end='')
 
             elif type(instruction) is EXIT:
-                symb = instruction.args[0]
+                symb = self.__update_symbol(instruction.args[0])
                 if symb.type != 'int':
                     RC().exit_e(RC.OPERAND_TYPE)
-                if int(symb.value) < 0 or int(symb.value) > 49:
+                elif int(symb.value) < 0 or int(symb.value) > 49:
                     RC().exit_e(RC.OPERAND_VALUE)
-                else:
-                    RC().exit_e(int(symb.value))
+
+                RC().exit_e(int(symb.value))
 
             elif type(instruction) is DPRINT:
-                symb = instruction.args[0]
-                if isinstance(symb, Variable):
-                    frame = self.__get_frame(symb.frame)
-                    symb = frame.get_var(symb.id)
+                symb = self.__update_symbol(instruction.args[0])
                 sys.stderr.write(str(symb.value))
 
             elif type(instruction) is CALL:
@@ -213,114 +237,71 @@ class Interpret:
                 self.__jump_to(label.id)
 
             elif type(instruction) is LABEL:
-                # label = instruction.args[0]
-                # if label in self.__labels:
-                #     RC().exit_e(RC.SEMANTIC)
-                # else:
-                #     self.__labels[label] = self.__instructions.pos
                 pass
 
             elif type(instruction) is JUMP:
                 label = instruction.args[0]
                 self.__jump_to(label.id)
 
-            elif type(instruction) is INT2CHAR:
-                var = instruction.args[0]
-                symb = instruction.args[1]
-                if isinstance(symb, Variable):
-                    frame = self.__get_frame(symb.frame)
-                    symb = frame.get_var(symb.id)
-                if symb.type != 'int':
-                    RC().exit_e(RC.SEMANTIC)
-                var.type = 'string'
-                try:
-                    var.value = chr(symb.value)
-                except ValueError:
-                    RC().exit_e(RC.BAD_STRING)
-                frame = self.__get_frame(var.frame)
-                frame.update_var(var.type, var.value, var.id)
-
-            elif type(instruction) is STRLEN:
-                var = instruction.args[0]
-                symb = instruction.args[1]
-                if symb.type != 'string':
-                    RC().exit_e(RC.SEMANTIC)
-                var.value = len(symb.value)
-                var.type = 'int'
-                frame = self.__get_frame(var.frame)
-                frame.update_var(var.type, var.value, var.id)
-
-            elif type(instruction) is TYPE:
-                var = instruction.args[0]
-                symb = instruction.args[1]
-                frame = self.__get_frame(var.frame)
-                if not frame.contains(var.id):
-                    RC().exit_e(RC.UNDEFINED_VARIABLE)
-                if isinstance(symb, Variable):
-                    symbframe = self.__get_frame(symb.frame)
-                    symb = symbframe.get_var(symb.id)
-                    if symb.type is None:
-                        var.value = ''
-                    else:
-                        var.value = symb.type
-                    var.type = 'string'
-
-                    frame.update_var(var.type, var.value, var.id)
-                else:
-                    frame = self.__get_frame(var.frame)
-                    var.value = symb.type
-                    var.type = 'string'
-                    frame.update_var(var.type, var.value, var.id)
-
-            elif type(instruction) is MOVE:
-                var = instruction.args[0]
-                symb = instruction.args[1]
-                frame = self.__get_frame(var.frame)
-                if isinstance(symb, Variable):
-                    symbFrame = self.__get_frame(symb.frame)
-                    symb = symbFrame.get_var(symb.id)
-
-                frame.update_var(symb.type, symb.value, var.id)
+            elif type(instruction) in [INT2CHAR, STRLEN, TYPE, MOVE, NOT]:
+                var = self.__get_variable(instruction.args[0])
+                symb = self.__update_symbol(instruction.args[1])
+                var = instruction.exec(var, symb)
+                self.__set_variable(var)
 
             elif type(instruction) is READ:
-                var = instruction.args[0]
-                frame = self.__get_frame(var.frame)
-                if not frame.contains(var.id):
-                    RC().exit_e(RC.UNDEFINED_VARIABLE)
-                typesymb = instruction.args[1].value
+                var = self.__get_variable(instruction.args[0])
+                reqType = instruction.args[1].value
+
                 if self.__inputPath is not None:
                     if len(self.__inputLines) == 0:
-                        RC().exit_e(RC.BAD_INPUT_FILE)
-                    result = self.__inputLines[self.__currentInputLine]
-                    self.__currentInputLine += 1
+                        result = ''
+                        # RC().exit_e(RC.BAD_INPUT_FILE)
+                    else:
+                        result = self.__inputLines[self.__currentInputLine]
+                        self.__currentInputLine += 1
                 else:
                     result = input()
                 # result is a line read
-                if typesymb == 'int':
-                    try:
-                        var.value = int(result)
-                        var.type = 'int'
-                    except ValueError:
-                        var.value = 'nil'
-                        var.type = 'nil'
-                elif typesymb == 'string':
-                    var.value = result
-                    var.type = 'string'
-                elif typesymb == 'bool':
-                    var.type = 'bool'
-                    if re.match(r'^true$', result, re.IGNORECASE):
-                        var.value = 'true'
-                    else:
-                        var.value = 'false'
-                frame.update_var(var.type, var.value, var.id)
+                var = instruction.exec(result, reqType, var)
+                self.__set_variable(var)
 
-            elif type(instruction) is NOT:
-                var = instruction.args[0]
-                symb = instruction.args[1]
-                if symb.type != 'bool':
-                    RC().exit_e(RC.SEMANTIC)
+            elif type(instruction) in [CONCAT, GETCHAR, SETCHAR, ADD, SUB, MUL, IDIV,
+                                       STRI2INT, LT, GT, EQ, AND, OR]:
+                var = self.__get_variable(instruction.args[0])
+                symb = self.__update_symbol(instruction.args[1])
+                symb2 = self.__update_symbol(instruction.args[2])
+                var = instruction.exec(var, symb, symb2)
+                self.__set_variable(var)
 
-                frame = self.__get_frame(var.frame)
-                frame.update_var('bool', symb.value, var.id)
+            elif type(instruction) is JUMPIFEQ:
+                label = instruction.args[0].id
+                symb = self.__update_symbol(instruction.args[1])
+                symb2 = self.__update_symbol(instruction.args[2])
+                # if symb.type == 'nil' or symb2.type == 'nil':
+                #     self.__jump_to(label)
+                # elif symb.type == symb2.type:
+                #     if symb.value == symb2.value:
+                #         self.__jump_to(label)
+                if symb.type == 'nil' or symb2.type == 'nil' or symb.type == symb2.type:
+                    if symb.value == symb2.value:
+                        self.__jump_to(label)
+                else:
+                    RC().exit_e(RC.OPERAND_TYPE)
+
+            elif type(instruction) is JUMPIFNEQ:
+                label = instruction.args[0].id
+                symb = self.__update_symbol(instruction.args[1])
+                symb2 = self.__update_symbol(instruction.args[2])
+                if symb.type == 'nil' or symb2.type == 'nil':
+                    self.__jump_to(label)
+                elif symb.type == symb2.type:
+                    if symb.value != symb2.value:
+                        self.__jump_to(label)
+                else:
+                    RC().exit_e(RC.OPERAND_TYPE)
+
+
+
 
 interpret = Interpret()
