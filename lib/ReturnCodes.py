@@ -38,7 +38,7 @@ class ReturnCodes:
         if code not in self.knownCodes:
             exit(code)
 
-        sys.stderr.write("Error! ")
+        sys.stderr.write("Error {}! ".format(code))
         match code:
             case self.BAD_ARGUMENT:
                 sys.stderr.write("Missing script parameter or forbidden parameter combination found\n")

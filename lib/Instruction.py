@@ -9,6 +9,9 @@ class Instruction:
         self.__check_order()
         self.__required = []
 
+    def exec(self):
+        pass
+
     @property
     def required(self):
         return self.__required
@@ -425,9 +428,30 @@ class LabelSymbSymb(Instruction):
         super().__init__(order)
         self.required = [Label, Symbol, Symbol]
 
+    @staticmethod
+    def _check_sem(s1: Symbol, s2: Symbol):
+        if not (s1.type == 'nil' or s2.type == 'nil' or s1.type == s2.type):
+            RC(RC.OPERAND_TYPE)
 
-class JUMPIFEQ(LabelSymbSymb): pass
-class JUMPIFNEQ(LabelSymbSymb): pass
+
+class JUMPIFEQ(LabelSymbSymb):
+    def exec(self, s1: Symbol, s2: Symbol) -> bool:
+        self._check_sem(s1, s2)
+
+        if s1.value == s2.value:
+            return True
+        else:
+            return False
+
+
+class JUMPIFNEQ(LabelSymbSymb):
+    def exec(self, s1: Symbol, s2: Symbol) -> bool:
+        self._check_sem(s1, s2)
+
+        if s1.value != s2.value:
+            return True
+        else:
+            return False
 
 
 knownInstructions = {

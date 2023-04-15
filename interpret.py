@@ -1,5 +1,4 @@
 # Allowed libraries
-import sys
 import argparse
 
 # Implemented libraries with classes
@@ -15,11 +14,10 @@ class Interpret:
 
         self.__datastack = Stack()
 
-        self.__args_parser()
-        self.__get_instructions_list()
+        self.__parse_args()
         self.__interpret_start()
 
-    def __args_parser(self):
+    def __parse_args(self):
         aparser = argparse.ArgumentParser()
         aparser.add_argument("--source", nargs=1, help="Missing parameter with source file")
         aparser.add_argument("--input", nargs=1, help="Missing parameter with input file")
@@ -43,56 +41,30 @@ class Interpret:
             else:
                 self.__sourcePath = args['source'][0]
 
-    def __create_frame(self):
-        self.__tframe = Frame()
-
-    def __delete_frame(self):
-        self.__tframe = None
-
-    def __tframe_exists(self):
+    def __tframe_exists(self) -> bool:
         return self.__tframe is not None
 
-    def __frames_not_empty(self):
+    def __frames_not_empty(self) -> bool:
         return self.__frames.size() > 0
-
-    def __get_tframe(self):
-        if self.__tframe_exists():
-            return self.__tframe
-        else:
-            RC(RC.UNDEFINED_FRAME)
-
-    def __get_top_lframe(self):
-        if self.__frames_not_empty():
-            return self.__frames.top()
-        else:
-            RC(RC.UNDEFINED_FRAME)
-
-    def __push_frame(self):
-        if self.__tframe_exists():
-            self.__frames.push(self.__tframe)
-            self.__tframe = None
-        else:
-            RC(RC.UNDEFINED_FRAME)
-
-    def __pop_frame(self):
-        self.__tframe = self.__get_top_lframe()
-        self.__frames.pop()
 
     def __get_frame(self, f: str) -> Frame | None:
         if f == 'GF':
             return self.__gframe
         elif f == 'LF':
-            return self.__get_top_lframe()
+            if self.__frames_not_empty():
+                return self.__frames.top()
+            else:
+                RC(RC.UNDEFINED_FRAME)
         elif f == 'TF':
-            return self.__get_tframe()
+            if self.__tframe_exists():
+                return self.__tframe
+            else:
+                RC(RC.UNDEFINED_FRAME)
         else:
             return None
 
-    def __label_exists(self, label) -> True | False:
-        return label in self.__instructions.labels
-
     def __jump_to(self, label: str):
-        if self.__label_exists(label):
+        if label in self.__instructions.labels:
             self.__instructions.pos = self.__instructions.labels[label]
         else:
             RC(RC.SEMANTIC)
@@ -111,17 +83,13 @@ class Interpret:
         frame = self.__get_frame(v.frame)
         frame.update_var(v.type, v.value, v.id)
 
-    def __get_instructions_list(self):
+    def __interpret_start(self):
         # Get XML representation
-        XML = XMLParse(self.__sourcePath)
+        xml = XMLParse(self.__sourcePath)
 
         # Get list of all instructions
-        self.__instructions = XML.get_instructions()
+        self.__instructions = xml.get_instructions()
         self.__instructions.transform_list()
-
-        # self.__instructions here is an Object with type InstructionsList
-
-    def __interpret_start(self):
 
         while True:
             instruction = self.__instructions.get_next_instruction()
@@ -130,14 +98,21 @@ class Interpret:
                 break
 
             if type(instruction) is CREATEFRAME:
-                self.__delete_frame()
-                self.__create_frame()
+                self.__tframe = None
+                self.__tframe = Frame()
 
             elif type(instruction) is PUSHFRAME:
-                self.__push_frame()
+                if self.__tframe_exists():
+                    self.__frames.push(self.__tframe)
+                    self.__tframe = None
+                else:
+                    RC(RC.UNDEFINED_FRAME)
 
             elif type(instruction) is POPFRAME:
-                self.__pop_frame()
+                if self.__frames_not_empty():
+                    self.__tframe = self.__frames.pop()
+                else:
+                    RC(RC.UNDEFINED_FRAME)
 
             elif type(instruction) is RETURN:
                 self.__instructions.return_pos()
@@ -231,27 +206,12 @@ class Interpret:
                 var = instruction.exec(var, symb, symb2)
                 self.__set_variable(var)
 
-            elif type(instruction) is JUMPIFEQ:
+            elif type(instruction) in [JUMPIFEQ, JUMPIFNEQ]:
                 label = instruction.args[0].id
                 symb = self.__update_symbol(instruction.args[1])
                 symb2 = self.__update_symbol(instruction.args[2])
-                if symb.type == 'nil' or symb2.type == 'nil' or symb.type == symb2.type:
-                    if symb.value == symb2.value:
-                        self.__jump_to(label)
-                else:
-                    RC(RC.OPERAND_TYPE)
-
-            elif type(instruction) is JUMPIFNEQ:
-                label = instruction.args[0].id
-                symb = self.__update_symbol(instruction.args[1])
-                symb2 = self.__update_symbol(instruction.args[2])
-                if symb.type == 'nil' or symb2.type == 'nil':
+                if instruction.exec(symb, symb2):
                     self.__jump_to(label)
-                elif symb.type == symb2.type:
-                    if symb.value != symb2.value:
-                        self.__jump_to(label)
-                else:
-                    RC(RC.OPERAND_TYPE)
 
 
 interpret = Interpret()
