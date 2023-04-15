@@ -49,10 +49,6 @@ class Interpret:
             else:
                 self.__sourcePath = args['source'][0]
 
-    """
-    START BLOCK: FRAMES OPERATIONS
-    """
-
     def __create_frame(self):
         self.__tframe = Frame()
 
@@ -98,14 +94,6 @@ class Interpret:
         else:
             return None
 
-    """
-    END BLOCK: FRAMES OPERATIONS
-    """
-
-    """
-    START BLOCK: OPCODE ARGUMENTS
-    """
-
     def __label_exists(self, label) -> True | False:
         return label in self.__labels
 
@@ -130,26 +118,6 @@ class Interpret:
         frame = self.__get_frame(v.frame)
         frame.update_var(v.type, v.value, v.id)
 
-    @staticmethod
-    def __process_string(s: str) -> str:
-        pattern = re.compile(r'(\\[0-9]{3})', re.UNICODE)
-        result = ''
-
-        for c in pattern.split(s):
-            if pattern.match(c):
-                c = chr(int(c[1:]))
-            result += c
-
-        return result
-
-    """
-    END BLOCK: OPCODE ARGUMENTS
-    """
-
-    """
-    START BLOCK: INTERPRET BODY
-    """
-
     def __get_instructions_list(self):
         # Get XML representation
         XML = XMLParse(self.__sourcePath)
@@ -157,12 +125,8 @@ class Interpret:
         # Get list of all instructions
         self.__instructions = XML.get_instructions()
         self.__instructions.transform_list()
-        # self.__instructions.print()
 
         # self.__instructions here is an Object with type InstructionsList
-    """
-    END BLOCK: INTERPRET BODY
-    """
 
     def __interpret_start(self):
 
@@ -214,8 +178,6 @@ class Interpret:
                 symb = self.__update_symbol(instruction.args[0])
                 if symb.type == 'nil':
                     symb.value = ''
-                if symb.type == 'string':
-                    symb.value = self.__process_string(symb.value)
                 print(symb.value, end='')
 
             elif type(instruction) is EXIT:
@@ -256,7 +218,6 @@ class Interpret:
                 if self.__inputPath is not None:
                     if len(self.__inputLines) == 0:
                         result = ''
-                        # RC().exit_e(RC.BAD_INPUT_FILE)
                     else:
                         result = self.__inputLines[self.__currentInputLine]
                         self.__currentInputLine += 1
@@ -278,11 +239,6 @@ class Interpret:
                 label = instruction.args[0].id
                 symb = self.__update_symbol(instruction.args[1])
                 symb2 = self.__update_symbol(instruction.args[2])
-                # if symb.type == 'nil' or symb2.type == 'nil':
-                #     self.__jump_to(label)
-                # elif symb.type == symb2.type:
-                #     if symb.value == symb2.value:
-                #         self.__jump_to(label)
                 if symb.type == 'nil' or symb2.type == 'nil' or symb.type == symb2.type:
                     if symb.value == symb2.value:
                         self.__jump_to(label)
@@ -300,8 +256,6 @@ class Interpret:
                         self.__jump_to(label)
                 else:
                     RC().exit_e(RC.OPERAND_TYPE)
-
-
 
 
 interpret = Interpret()

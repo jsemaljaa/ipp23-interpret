@@ -1,6 +1,7 @@
 from lib.ReturnCodes import ReturnCodes as RC
 from lib.DataStructures import *
 
+
 class Instruction:
     def __init__(self, order: int) -> None:
         self.__order = order
@@ -88,97 +89,61 @@ class Instruction:
                 RC().exit_e(RC.BAD_XML_TREE)
 
 
-class CREATEFRAME(Instruction):
+class ZeroArgs(Instruction):
     def __init__(self, order):
         super().__init__(order)
         self.required = []
 
 
-class PUSHFRAME(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = []
+class CREATEFRAME(ZeroArgs): pass
+class PUSHFRAME(ZeroArgs): pass
+class POPFRAME(ZeroArgs): pass
+class RETURN(ZeroArgs): pass
+class BREAK(ZeroArgs): pass
 
 
-class POPFRAME(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = []
-
-
-class RETURN(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = []
-
-
-class BREAK(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = []
-
-
-class DEFVAR(Instruction):
+class OneVariable(Instruction):
     def __init__(self, order):
         super().__init__(order)
         self.required = [Variable]
 
 
-
-class POPS(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Variable]
+class DEFVAR(OneVariable): pass
+class POPS(OneVariable): pass
 
 
-class PUSHS(Instruction):
+class OneSymbol(Instruction):
     def __init__(self, order):
         super().__init__(order)
         self.required = [Symbol]
 
 
-class WRITE(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Symbol]
+class PUSHS(OneSymbol): pass
+class WRITE(OneSymbol): pass
+class EXIT(OneSymbol): pass
+class DPRINT(OneSymbol): pass
 
 
-class EXIT(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Symbol]
-
-
-class DPRINT(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Symbol]
-
-
-class CALL(Instruction):
+class OneLabel(Instruction):
     def __init__(self, order):
         super().__init__(order)
         self.required = [Label]
 
 
-class LABEL(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Label]
+class CALL(OneLabel): pass
+class LABEL(OneLabel): pass
+class JUMP(OneLabel): pass
 
 
-class JUMP(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Label]
-
-
-class INT2CHAR(Instruction):
+class VarSymb(Instruction):
     def __init__(self, order):
         super().__init__(order)
         self.required = [Variable, Symbol]
 
-    def exec(self, v: Variable, s: Symbol) -> Variable:
+
+class INT2CHAR(VarSymb):
+    @staticmethod
+    def exec(v: Variable, s: Symbol) -> Variable:
         if s.type != 'int':
             RC().exit_e(RC.OPERAND_TYPE)
         v.type = 'string'
@@ -190,12 +155,9 @@ class INT2CHAR(Instruction):
         return v
 
 
-class STRLEN(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Variable, Symbol]
-
-    def exec(self, v: Variable, s: Symbol):
+class STRLEN(VarSymb):
+    @staticmethod
+    def exec(v: Variable, s: Symbol):
         if s.type != 'string':
             RC().exit_e(RC.OPERAND_TYPE)
         v.value = len(s.value)
@@ -203,12 +165,9 @@ class STRLEN(Instruction):
         return v
 
 
-class TYPE(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Variable, Symbol]
-
-    def exec(self, v: Variable, s: Symbol) -> Variable:
+class TYPE(VarSymb):
+    @staticmethod
+    def exec(v: Variable, s: Symbol) -> Variable:
         v.type = 'string'
         if s.type is None:
             v.value = ''
@@ -218,23 +177,17 @@ class TYPE(Instruction):
         return v
 
 
-class MOVE(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Variable, Symbol]
-
-    def exec(self, v: Variable, s: Symbol) -> Variable:
+class MOVE(VarSymb):
+    @staticmethod
+    def exec(v: Variable, s: Symbol) -> Variable:
         v.type = s.type
         v.value = s.value
         return v
 
 
-class NOT(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Variable, Symbol]
-
-    def exec(self, v: Variable, s: Symbol):
+class NOT(VarSymb):
+    @staticmethod
+    def exec(v: Variable, s: Symbol):
         if s.type != 'bool':
             RC().exit_e(RC.OPERAND_TYPE)
         v.type = 'bool'
@@ -275,12 +228,15 @@ class READ(Instruction):
         return v
 
 
-class CONCAT(Instruction):
+class VarSymbSymb(Instruction):
     def __init__(self, order):
         super().__init__(order)
         self.required = [Variable, Symbol, Symbol]
 
-    def exec(self, v: Variable, s1: Symbol, s2: Symbol) -> Variable:
+
+class CONCAT(VarSymbSymb):
+    @staticmethod
+    def exec(v: Variable, s1: Symbol, s2: Symbol) -> Variable:
         if s1.type != 'string' or s2.type != 'string':
             RC().exit_e(RC.OPERAND_TYPE)
         v.type = 'string'
@@ -288,13 +244,9 @@ class CONCAT(Instruction):
         return v
 
 
-class GETCHAR(Instruction):
-
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Variable, Symbol, Symbol]
-
-    def exec(self, v: Variable, s1: Symbol, s2: Symbol) -> Variable:
+class GETCHAR(VarSymbSymb):
+    @staticmethod
+    def exec(v: Variable, s1: Symbol, s2: Symbol) -> Variable:
         if s1.type != 'string' or s2.type != 'int' or int(s2.value) < 0:
             RC().exit_e(RC.OPERAND_TYPE)
 
@@ -306,12 +258,9 @@ class GETCHAR(Instruction):
         return v
 
 
-class SETCHAR(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Variable, Symbol, Symbol]
-
-    def exec(self, v: Variable, s1: Symbol, s2: Symbol) -> Variable:
+class SETCHAR(VarSymbSymb):
+    @staticmethod
+    def exec(v: Variable, s1: Symbol, s2: Symbol) -> Variable:
         if v.type != 'string' or s1.type != 'int' or s1.value < 0 or s2.type != 'string':
             RC().exit_e(RC.OPERAND_TYPE)
 
@@ -328,12 +277,9 @@ class SETCHAR(Instruction):
         return v
 
 
-class STRI2INT(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Variable, Symbol, Symbol]
-
-    def exec(self, v: Variable, s1: Symbol, s2: Symbol) -> Variable:
+class STRI2INT(VarSymbSymb):
+    @staticmethod
+    def exec(v: Variable, s1: Symbol, s2: Symbol) -> Variable:
         if s1.type != 'string' or s2.type != 'int' or s2.value < 0:
             RC().exit_e(RC.OPERAND_TYPE)
 
@@ -346,19 +292,14 @@ class STRI2INT(Instruction):
         return v
 
 
-class Arithmetics(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Variable, Symbol, Symbol]
-
-    def _check_sem(self, s1: Symbol, s2: Symbol):
+class Arithmetics(VarSymbSymb):
+    @staticmethod
+    def _check_sem(s1: Symbol, s2: Symbol):
         if s1.type != 'int' or s2.type != 'int':
             RC().exit_e(RC.OPERAND_TYPE)
 
-class ADD(Arithmetics):
-    def __init__(self, order):
-        super().__init__(order)
 
+class ADD(Arithmetics):
     def exec(self, v: Variable, s1: Symbol, s2: Symbol) -> Variable:
         self._check_sem(s1, s2)
         v.value = s1.value + s2.value
@@ -367,9 +308,6 @@ class ADD(Arithmetics):
 
 
 class SUB(Arithmetics):
-    def __init__(self, order):
-        super().__init__(order)
-
     def exec(self, v: Variable, s1: Symbol, s2: Symbol) -> Variable:
         self._check_sem(s1, s2)
         v.value = s1.value - s2.value
@@ -378,9 +316,6 @@ class SUB(Arithmetics):
 
 
 class MUL(Arithmetics):
-    def __init__(self, order):
-        super().__init__(order)
-
     def exec(self, v: Variable, s1: Symbol, s2: Symbol) -> Variable:
         self._check_sem(s1, s2)
         v.value = s1.value * s2.value
@@ -389,9 +324,6 @@ class MUL(Arithmetics):
 
 
 class IDIV(Arithmetics):
-    def __init__(self, order):
-        super().__init__(order)
-
     def exec(self, v: Variable, s1: Symbol, s2: Symbol) -> Variable:
         self._check_sem(s1, s2)
         if s2.value == 0:
@@ -401,20 +333,14 @@ class IDIV(Arithmetics):
         return v
 
 
-class Relation(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Variable, Symbol, Symbol]
-
-    def _check_sem(self, s1: Symbol, s2: Symbol):
+class Relation(VarSymbSymb):
+    @staticmethod
+    def _check_sem(s1: Symbol, s2: Symbol):
         if s1.type != s2.type:
             RC().exit_e(RC.OPERAND_TYPE)
 
 
 class LT(Relation):
-    def __init__(self, order):
-        super().__init__(order)
-
     def exec(self, v: Variable, s1: Symbol, s2: Symbol):
         self._check_sem(s1, s2)
         v.type = 'bool'
@@ -431,9 +357,6 @@ class LT(Relation):
 
 
 class GT(Relation):
-    def __init__(self, order):
-        super().__init__(order)
-
     def exec(self, v: Variable, s1: Symbol, s2: Symbol):
         self._check_sem(s1, s2)
         v.type = 'bool'
@@ -450,10 +373,8 @@ class GT(Relation):
 
 
 class EQ(Relation):
-    def __init__(self, order):
-        super().__init__(order)
-
-    def exec(self, v: Variable, s1: Symbol, s2: Symbol):
+    @staticmethod
+    def exec(v: Variable, s1: Symbol, s2: Symbol):
         if s1.type == 'nil' or s2.type == 'nil':
             v.type = 'bool'
             v.value = 'true' if s1.value == 'nil' and s2.value == 'nil' else 'false'
@@ -461,7 +382,6 @@ class EQ(Relation):
 
         if s1.type != s2.type:
             RC().exit_e(RC.OPERAND_TYPE)
-
 
         v.type = 'bool'
         if s1.type == 'bool':
@@ -473,20 +393,15 @@ class EQ(Relation):
 
         return v
 
-class Logic(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Variable, Symbol, Symbol]
 
-    def _check_sem(self, s1: Symbol, s2: Symbol):
+class Logic(VarSymbSymb):
+    @staticmethod
+    def _check_sem(s1: Symbol, s2: Symbol):
         if s1.type != 'bool' or s2.type != 'bool':
             RC().exit_e(RC.OPERAND_TYPE)
 
-class AND(Logic):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Variable, Symbol, Symbol]
 
+class AND(Logic):
     def exec(self, v: Variable, s1: Symbol, s2: Symbol) -> Variable:
         self._check_sem(s1, s2)
 
@@ -497,10 +412,6 @@ class AND(Logic):
 
 
 class OR(Logic):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Variable, Symbol, Symbol]
-
     def exec(self, v: Variable, s1: Symbol, s2: Symbol) -> Variable:
         self._check_sem(s1, s2)
 
@@ -509,18 +420,15 @@ class OR(Logic):
 
         return v
 
-# class ConditionJumps(Instruction):
 
-
-class JUMPIFEQ(Instruction):
+class LabelSymbSymb(Instruction):
     def __init__(self, order):
         super().__init__(order)
         self.required = [Label, Symbol, Symbol]
 
-class JUMPIFNEQ(Instruction):
-    def __init__(self, order):
-        super().__init__(order)
-        self.required = [Label, Symbol, Symbol]
+
+class JUMPIFEQ(LabelSymbSymb): pass
+class JUMPIFNEQ(LabelSymbSymb): pass
 
 
 knownInstructions = {
