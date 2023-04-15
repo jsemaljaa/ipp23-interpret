@@ -22,7 +22,7 @@ class InstructionsList:
     @pos.setter
     def pos(self, new_pos: int):
         if new_pos <= 0:
-            RC().exit_e(RC.SEMANTIC)
+            RC(RC.SEMANTIC)
         else:
             self.__pos = new_pos
 
@@ -34,7 +34,7 @@ class InstructionsList:
         self.__counter += 1
         if type(i) is LABEL:
             if i.args[0].id in self.__labels:
-                RC().exit_e(RC.SEMANTIC)
+                RC(RC.SEMANTIC)
             self.__labels[i.args[0].id] = self.__counter
         self.__list[i.order-1] = i
 
@@ -58,6 +58,6 @@ class InstructionsList:
 
     def return_pos(self):
         if self.__callStack.is_empty():
-            RC().exit_e(RC.MISSING_VALUE)
+            RC(RC.MISSING_VALUE)
         else:
             self.__pos = self.__callStack.pop()

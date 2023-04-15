@@ -51,7 +51,7 @@ class Instruction:
             try:
                 arg = Const(type=type, value=int(value))
             except ValueError:
-                RC().exit_e(RC.BAD_XML_TREE)
+                RC(RC.BAD_XML_TREE)
         elif type == 'bool':
             if value == 'true':
                 arg = Const(type=type, value='true')
@@ -63,31 +63,29 @@ class Instruction:
             arg = Const(type=type, value=str(value))
         elif type == 'nil':
             if value != 'nil':
-                RC().exit_e(RC.BAD_XML_TREE)
+                RC(RC.BAD_XML_TREE)
             else:
                 arg = Const(type=type, value=value)
         elif type == 'type':
             arg = Type(value=value)
         else:
-            RC().exit_e(RC.BAD_XML_TREE)
+            RC(RC.BAD_XML_TREE)
 
         return arg
-        # self.__args.append(arg)
-        # self.__args.insert(order-1, arg)
 
     def __check_order(self):
         if not isinstance(self.order, int) or self.order < 1:
-            RC().exit_e(RC.BAD_XML_TREE)
+            RC(RC.BAD_XML_TREE)
 
     def check_instruction_arguments(self):
         if len(self.args) != len(self.required):
-            RC().exit_e(RC.BAD_XML_TREE)
+            RC(RC.BAD_XML_TREE)
         i = 0
         for arg in self.args:
             if isinstance(arg, self.required[i]): # noqa
                 i += 1
             else:
-                RC().exit_e(RC.BAD_XML_TREE)
+                RC(RC.BAD_XML_TREE)
 
 
 class ZeroArgs(Instruction):
@@ -146,12 +144,12 @@ class INT2CHAR(VarSymb):
     @staticmethod
     def exec(v: Variable, s: Symbol) -> Variable:
         if s.type != 'int':
-            RC().exit_e(RC.OPERAND_TYPE)
+            RC(RC.OPERAND_TYPE)
         v.type = 'string'
         try:
             v.value = chr(s.value)
         except ValueError:
-            RC().exit_e(RC.BAD_STRING)
+            RC(RC.BAD_STRING)
 
         return v
 
@@ -160,7 +158,7 @@ class STRLEN(VarSymb):
     @staticmethod
     def exec(v: Variable, s: Symbol):
         if s.type != 'string':
-            RC().exit_e(RC.OPERAND_TYPE)
+            RC(RC.OPERAND_TYPE)
         v.value = len(s.value)
         v.type = 'int'
         return v
@@ -190,7 +188,7 @@ class NOT(VarSymb):
     @staticmethod
     def exec(v: Variable, s: Symbol):
         if s.type != 'bool':
-            RC().exit_e(RC.OPERAND_TYPE)
+            RC(RC.OPERAND_TYPE)
         v.type = 'bool'
         if s.value == 'true':
             v.value = 'false'
@@ -239,7 +237,7 @@ class CONCAT(VarSymbSymb):
     @staticmethod
     def exec(v: Variable, s1: Symbol, s2: Symbol) -> Variable:
         if s1.type != 'string' or s2.type != 'string':
-            RC().exit_e(RC.OPERAND_TYPE)
+            RC(RC.OPERAND_TYPE)
         v.type = 'string'
         v.value = s1.value + s2.value
         return v
@@ -249,12 +247,12 @@ class GETCHAR(VarSymbSymb):
     @staticmethod
     def exec(v: Variable, s1: Symbol, s2: Symbol) -> Variable:
         if s1.type != 'string' or s2.type != 'int' or int(s2.value) < 0:
-            RC().exit_e(RC.OPERAND_TYPE)
+            RC(RC.OPERAND_TYPE)
 
         try:
             v.value = s1.value[int(s2.value)]
         except IndexError:
-            RC().exit_e(RC.BAD_STRING)
+            RC(RC.BAD_STRING)
 
         return v
 
@@ -263,17 +261,17 @@ class SETCHAR(VarSymbSymb):
     @staticmethod
     def exec(v: Variable, s1: Symbol, s2: Symbol) -> Variable:
         if v.type != 'string' or s1.type != 'int' or s1.value < 0 or s2.type != 'string':
-            RC().exit_e(RC.OPERAND_TYPE)
+            RC(RC.OPERAND_TYPE)
 
         if s2.value == '':
-            RC().exit_e(RC.BAD_STRING)
+            RC(RC.BAD_STRING)
 
         try:
             tmp = list(v.value)
             tmp[int(s1.value)] = s2.value[0]
             v.value = ''.join(tmp)
         except IndexError:
-            RC().exit_e(RC.BAD_STRING)
+            RC(RC.BAD_STRING)
 
         return v
 
@@ -282,13 +280,13 @@ class STRI2INT(VarSymbSymb):
     @staticmethod
     def exec(v: Variable, s1: Symbol, s2: Symbol) -> Variable:
         if s1.type != 'string' or s2.type != 'int' or s2.value < 0:
-            RC().exit_e(RC.OPERAND_TYPE)
+            RC(RC.OPERAND_TYPE)
 
         try:
             v.type = 'int'
             v.value = ord(s1.value[int(s2.value)])
         except IndexError:
-            RC().exit_e(RC.BAD_STRING)
+            RC(RC.BAD_STRING)
 
         return v
 
@@ -297,7 +295,7 @@ class Arithmetics(VarSymbSymb):
     @staticmethod
     def _check_sem(s1: Symbol, s2: Symbol):
         if s1.type != 'int' or s2.type != 'int':
-            RC().exit_e(RC.OPERAND_TYPE)
+            RC(RC.OPERAND_TYPE)
 
 
 class ADD(Arithmetics):
@@ -328,7 +326,7 @@ class IDIV(Arithmetics):
     def exec(self, v: Variable, s1: Symbol, s2: Symbol) -> Variable:
         self._check_sem(s1, s2)
         if s2.value == 0:
-            RC().exit_e(RC.OPERAND_VALUE)
+            RC(RC.OPERAND_VALUE)
         v.value = s1.value // s2.value
         v.type = 'int'
         return v
@@ -338,7 +336,7 @@ class Relation(VarSymbSymb):
     @staticmethod
     def _check_sem(s1: Symbol, s2: Symbol):
         if s1.type != s2.type:
-            RC().exit_e(RC.OPERAND_TYPE)
+            RC(RC.OPERAND_TYPE)
 
 
 class LT(Relation):
@@ -352,7 +350,7 @@ class LT(Relation):
         elif s1.type == 'int':
             v.value = 'true' if int(s1.value) < int(s2.value) else 'false'
         else:
-            RC().exit_e(RC.OPERAND_TYPE)
+            RC(RC.OPERAND_TYPE)
 
         return v
 
@@ -368,7 +366,7 @@ class GT(Relation):
         elif s1.type == 'int':
             v.value = 'true' if int(s1.value) > int(s2.value) else 'false'
         else:
-            RC().exit_e(RC.OPERAND_TYPE)
+            RC(RC.OPERAND_TYPE)
 
         return v
 
@@ -382,7 +380,7 @@ class EQ(Relation):
             return v
 
         if s1.type != s2.type:
-            RC().exit_e(RC.OPERAND_TYPE)
+            RC(RC.OPERAND_TYPE)
 
         v.type = 'bool'
         if s1.type == 'bool':
@@ -399,7 +397,7 @@ class Logic(VarSymbSymb):
     @staticmethod
     def _check_sem(s1: Symbol, s2: Symbol):
         if s1.type != 'bool' or s2.type != 'bool':
-            RC().exit_e(RC.OPERAND_TYPE)
+            RC(RC.OPERAND_TYPE)
 
 
 class AND(Logic):

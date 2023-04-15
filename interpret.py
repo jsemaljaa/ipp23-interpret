@@ -27,7 +27,7 @@ class Interpret:
         args = vars(aparser.parse_args())
 
         if args['input'] is None and args['source'] is None:
-            RC().exit_e(RC.BAD_ARGUMENT)
+            RC(RC.BAD_ARGUMENT)
         else:
             if args['input'] is None:
                 self.__inputPath = None
@@ -59,20 +59,20 @@ class Interpret:
         if self.__tframe_exists():
             return self.__tframe
         else:
-            RC().exit_e(RC.UNDEFINED_FRAME)
+            RC(RC.UNDEFINED_FRAME)
 
     def __get_top_lframe(self):
         if self.__frames_not_empty():
             return self.__frames.top()
         else:
-            RC().exit_e(RC.UNDEFINED_FRAME)
+            RC(RC.UNDEFINED_FRAME)
 
     def __push_frame(self):
         if self.__tframe_exists():
             self.__frames.push(self.__tframe)
             self.__tframe = None
         else:
-            RC().exit_e(RC.UNDEFINED_FRAME)
+            RC(RC.UNDEFINED_FRAME)
 
     def __pop_frame(self):
         self.__tframe = self.__get_top_lframe()
@@ -95,7 +95,7 @@ class Interpret:
         if self.__label_exists(label):
             self.__instructions.pos = self.__instructions.labels[label]
         else:
-            RC().exit_e(RC.SEMANTIC)
+            RC(RC.SEMANTIC)
 
     def __update_symbol(self, arg: Symbol) -> Symbol:
         if isinstance(arg, Variable):
@@ -119,7 +119,6 @@ class Interpret:
         self.__instructions = XML.get_instructions()
         self.__instructions.transform_list()
 
-
         # self.__instructions here is an Object with type InstructionsList
 
     def __interpret_start(self):
@@ -129,9 +128,6 @@ class Interpret:
 
             if instruction is None:
                 break
-
-            # instruction.print()
-            # print(self.__labels)
 
             if type(instruction) is CREATEFRAME:
                 self.__delete_frame()
@@ -161,7 +157,7 @@ class Interpret:
 
             elif type(instruction) is POPS:
                 if self.__datastack.is_empty():
-                    RC().exit_e(RC.MISSING_VALUE)
+                    RC(RC.MISSING_VALUE)
                 else:
                     var = self.__get_variable(instruction.args[0])
                     symb = self.__datastack.pop()
@@ -183,11 +179,11 @@ class Interpret:
             elif type(instruction) is EXIT:
                 symb = self.__update_symbol(instruction.args[0])
                 if symb.type != 'int':
-                    RC().exit_e(RC.OPERAND_TYPE)
+                    RC(RC.OPERAND_TYPE)
                 elif int(symb.value) < 0 or int(symb.value) > 49:
-                    RC().exit_e(RC.OPERAND_VALUE)
+                    RC(RC.OPERAND_VALUE)
 
-                RC().exit_e(int(symb.value))
+                RC(int(symb.value))
 
             elif type(instruction) is DPRINT:
                 symb = self.__update_symbol(instruction.args[0])
@@ -243,7 +239,7 @@ class Interpret:
                     if symb.value == symb2.value:
                         self.__jump_to(label)
                 else:
-                    RC().exit_e(RC.OPERAND_TYPE)
+                    RC(RC.OPERAND_TYPE)
 
             elif type(instruction) is JUMPIFNEQ:
                 label = instruction.args[0].id
@@ -255,7 +251,7 @@ class Interpret:
                     if symb.value != symb2.value:
                         self.__jump_to(label)
                 else:
-                    RC().exit_e(RC.OPERAND_TYPE)
+                    RC(RC.OPERAND_TYPE)
 
 
 interpret = Interpret()

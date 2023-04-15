@@ -1,46 +1,5 @@
 import sys
 
-# https://towardsdatascience.com/should-we-use-custom-exceptions-in-python-b4b4bca474ac
-# https://www.programiz.com/python-programming/user-defined-exception
-
-# class BadArgumentException(Exception):
-#     """
-#     Exception raised for cases with wrong or missing arguments
-#     """
-#
-# class BadInputException(Exception):
-#     pass
-#
-# class BadOutputException(Exception):
-#     pass
-#
-# class NotWellFormattedXMLException(Exception):
-#     pass
-#
-# class BadXMLTreeException(Exception):
-#     pass
-#
-# class BadSemanticException(Exception):
-#     pass
-#
-# class BadOperandTypeException(Exception):
-#     pass
-#
-# class UndefinedVariableException(Exception):
-#     pass
-#
-# class UndefinedFrameException(Exception):
-#     pass
-#
-# class MissingValueException(Exception):
-#     pass
-#
-# class BadOperandValueException(Exception):
-#     pass
-#
-# class BadStringException(Exception):
-#     pass
-
 
 class ReturnCodes:
 
@@ -75,10 +34,7 @@ class ReturnCodes:
         BAD_STRING
     ]
 
-    def __init__(self):
-        pass
-
-    def exit_e(self, code):
+    def __init__(self, code):
         if code not in self.knownCodes:
             exit(code)
 

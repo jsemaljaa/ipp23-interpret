@@ -144,7 +144,7 @@ class Frame:
         if not self.contains(var.id):
             self.__items.append(var)
         else:
-            RC().exit_e(RC.SEMANTIC)
+            RC(RC.SEMANTIC)
 
     def contains(self, id: str) -> True | False:
         for var in self.__items:
@@ -158,7 +158,7 @@ class Frame:
                 if i.id == id:
                     return i
         else:
-            RC().exit_e(RC.UNDEFINED_VARIABLE)
+            RC(RC.UNDEFINED_VARIABLE)
 
     def update_var(self, type, value, id=None):
         if self.contains(id):
@@ -167,4 +167,4 @@ class Frame:
                     var.type = type
                     var.value = value
         else:
-            RC().exit_e(RC.UNDEFINED_VARIABLE)
+            RC(RC.UNDEFINED_VARIABLE)
