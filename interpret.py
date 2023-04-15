@@ -88,7 +88,7 @@ class Interpret:
         xml = XMLParse(self.__sourcePath)
 
         # Get list of all instructions
-        self.__instructions = xml.get_instructions()
+        self.__instructions = xml.instructions
         self.__instructions.transform_list()
 
         while True:

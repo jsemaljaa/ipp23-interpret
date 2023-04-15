@@ -90,7 +90,9 @@ class Variable(Symbol):
                                    (str(self.type) if self.type is not None else 'none'),
                                    (str(self.value) if self.value is not None else 'none')))
 
+
 class Stack:
+
     def __init__(self):
         self.__items = []
 
@@ -137,7 +139,7 @@ class Frame:
             n += 1
 
     # Returns size of the frame
-    def size(self):
+    def size(self) -> int:
         return len(self.__items)
 
     def define_var(self, var: Variable):

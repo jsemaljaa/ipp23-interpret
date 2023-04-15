@@ -32,10 +32,15 @@ class InstructionsList:
 
     def append(self, i: Instruction):
         self.__counter += 1
+
         if type(i) is LABEL:
-            if i.args[0].id in self.__labels:
+            label = i.args[0].id
+
+            if label in self.__labels:
                 RC(RC.SEMANTIC)
-            self.__labels[i.args[0].id] = self.__counter
+
+            self.__labels[label] = self.__counter
+
         self.__list[i.order-1] = i
 
     def print(self):
@@ -49,7 +54,7 @@ class InstructionsList:
         if self.__pos > len(self.__list):
             return None
         else:
-            instruction = self.__list[self.__pos-1]
+            instruction = self.__list[self.__pos - 1]
             self.__pos += 1
             return instruction
 

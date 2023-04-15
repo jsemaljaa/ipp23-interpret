@@ -16,8 +16,11 @@ class XMLParse:
         self.__knownOrders = []
         self.__args = {}
 
-        self.__check_tree()
-        self.__collect_instructions()
+        self.__start()
+
+    @property
+    def instructions(self):
+        return self.__instructions
 
     def __save_order(self, order) -> int:
         try:
@@ -31,13 +34,14 @@ class XMLParse:
             self.__knownOrders.append(order)
             return order
 
-    def __check_tree(self):
+    def __start(self):
         try:
             self.__tree = et.parse(self.__path)
         except (FileNotFoundError, Exception):
             RC(RC.NOT_WF_XML)
 
         self.__check_root()
+        self.__collect_instructions()
 
     def __check_root(self):
         self.__root = self.__tree.getroot()
@@ -67,7 +71,41 @@ class XMLParse:
         if not sub.tag.startswith('arg') or sub.tag[3] not in ['1', '2', '3']:
             RC(RC.BAD_XML_TREE)
 
-        self.__args[int(sub.tag[3])] = inst.process_arg(sub.attrib['type'], sub.text)
+        self.__process_arg(sub)
+
+    def __process_arg(self, sub):
+        type = sub.attrib['type']
+        value = sub.text
+        if type == 'var':
+            frame, id = value.split("@")
+            arg = Variable(id=id, type=None, value=None, frame=frame)
+        elif type == 'label':
+            arg = Label(id=value)
+        elif type == 'int':
+            try:
+                arg = Const(type=type, value=int(value))
+            except ValueError:
+                RC(RC.BAD_XML_TREE)
+        elif type == 'bool':
+            if value == 'true':
+                arg = Const(type=type, value='true')
+            else:
+                arg = Const(type=type, value='false')
+        elif type == 'string':
+            if value is None:
+                value = ''
+            arg = Const(type=type, value=str(value))
+        elif type == 'nil':
+            if value != 'nil':
+                RC(RC.BAD_XML_TREE)
+            else:
+                arg = Const(type=type, value=value)
+        elif type == 'type':
+            arg = Type(value=value)
+        else:
+            RC(RC.BAD_XML_TREE)
+
+        self.__args[int(sub.tag[3])] = arg
 
     def __collect_instructions(self):
         for e in self.__root:
@@ -81,12 +119,5 @@ class XMLParse:
                 RC(RC.BAD_XML_TREE)
 
             self.__inst.set_args(list(d.values()))
-
-            self.__inst.check_instruction_arguments()
-
             self.__instructions.append(self.__inst)
             self.__args = {}
-            # inst.print()
-
-    def get_instructions(self) -> InstructionsList:
-        return self.__instructions

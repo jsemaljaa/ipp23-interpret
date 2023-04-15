@@ -9,9 +9,6 @@ class Instruction:
         self.__check_order()
         self.__required = []
 
-    def exec(self):
-        pass
-
     @property
     def required(self):
         return self.__required
@@ -41,40 +38,7 @@ class Instruction:
 
     def set_args(self, args: list):
         self.__args = args
-
-    @staticmethod
-    def process_arg(type, value, order=None):
-        arg = None
-        if type == 'var':
-            frame, id = value.split("@")
-            arg = Variable(id=id, type=None, value=None, frame=frame)
-        elif type == 'label':
-            arg = Label(id=value)
-        elif type == 'int':
-            try:
-                arg = Const(type=type, value=int(value))
-            except ValueError:
-                RC(RC.BAD_XML_TREE)
-        elif type == 'bool':
-            if value == 'true':
-                arg = Const(type=type, value='true')
-            else:
-                arg = Const(type=type, value='false')
-        elif type == 'string':
-            if value is None:
-                value = ''
-            arg = Const(type=type, value=str(value))
-        elif type == 'nil':
-            if value != 'nil':
-                RC(RC.BAD_XML_TREE)
-            else:
-                arg = Const(type=type, value=value)
-        elif type == 'type':
-            arg = Type(value=value)
-        else:
-            RC(RC.BAD_XML_TREE)
-
-        return arg
+        self.check_instruction_arguments()
 
     def __check_order(self):
         if not isinstance(self.order, int) or self.order < 1:
