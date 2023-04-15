@@ -1,5 +1,5 @@
 from lib.ReturnCodes import ReturnCodes as RC
-import re
+import sys
 
 
 class Symbol:
@@ -64,13 +64,10 @@ class Const(Symbol):
 
     def __init__(self, type, value):
         super().__init__(type=type, value=value)
-        # if type == 'string':
-            # self.value.encode().decode("utf-8", "strict")
-            # print(self.value)
 
     def print(self):
-        print("\t\tConst: type " + self.type +
-              "\n\t\tvalue: " + str(self.value))
+        sys.stderr.write("\tConst\n"
+                         "\t\ttype {} with value \'{}\'\n".format(self.type, str(self.value)))
 
 
 class Variable(Symbol):
@@ -86,11 +83,12 @@ class Variable(Symbol):
         return self.__frame
 
     def print(self):
-        print("\t\tVariable name: " + self.id +
-              "\n\t\ttype: " + (str(self.type) if self.type is not None else 'none') +
-              "\n\t\tvalue: " + (str(self.value) if self.value is not None else 'none') +
-              "\n\t\tframe: " + self.__frame)
-
+        sys.stderr.write("\tVariable: {} in {} frame\n"
+                         "\t\ttype \'{}\' with value: \'{}\'\n"
+                         "".format(self.id,
+                                   self.__frame,
+                                   (str(self.type) if self.type is not None else 'none'),
+                                   (str(self.value) if self.value is not None else 'none')))
 
 class Stack:
     def __init__(self):
@@ -116,10 +114,10 @@ class Stack:
         return self.size() == 0
 
     def print(self):
-        print("\t-- stack bottom")
+        sys.stderr.write("\t--- Stack bottom")
         for i in self.__items:
             i.print()
-        print("\tstack top --")
+        sys.stderr.write("\tStack top ---")
 
 
 class Frame:
@@ -134,7 +132,7 @@ class Frame:
     def print(self):
         n = 1
         for i in self.__items:
-            print(n)
+            sys.stderr.write("\tNo.{}:".format(n))
             i.print()
             n += 1
 

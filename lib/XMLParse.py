@@ -16,7 +16,6 @@ class XMLParse:
 
         self.__check_tree()
         self.__collect_instructions()
-        # self.__print_instructions_list()
 
     def __order_exists(self, order: int) -> True | False:
         return order in self.__knownOrders
@@ -45,14 +44,19 @@ class XMLParse:
         for e in self.__root:
             if e.tag != 'instruction' or 'order' not in e.attrib or 'opcode' not in e.attrib:
                 RC().exit_e(RC.BAD_XML_TREE)
+
             instruction = e.attrib['opcode'].upper()
+
             try:
                 order = int(e.attrib['order'])
             except ValueError:
                 RC().exit_e(RC.BAD_XML_TREE)
+
             if self.__order_exists(order):
                 RC().exit_e(RC.BAD_XML_TREE)
+
             self.__knownOrders.append(order)
+
             if instruction in knownInstructions:
                 inst = knownInstructions[instruction](order)
             else:
@@ -61,13 +65,14 @@ class XMLParse:
             for sub in e:
                 if not sub.tag.startswith('arg') or sub.tag[3] not in ['1', '2', '3']:
                     RC().exit_e(RC.BAD_XML_TREE)
-                # print(sub.tag[3])
+
                 self.__args[int(sub.tag[3])] = inst.process_arg(sub.attrib['type'], sub.text)
 
             d = dict(sorted(self.__args.items()))
             if 1 not in d and len(d) != 0:
                 RC().exit_e(RC.BAD_XML_TREE)
-            inst.add_args_list(list(d.values()))
+
+            inst.set_args(list(d.values()))
 
             inst.check_instruction_arguments()
 
@@ -76,5 +81,7 @@ class XMLParse:
             # inst.print()
 
     def get_instructions(self) -> InstructionsList:
-
         return self.__instructions
+
+    def get_labels(self) -> dict:
+        return self.__labels

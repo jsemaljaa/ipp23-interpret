@@ -80,7 +80,6 @@ class ReturnCodes:
 
     def exit_e(self, code):
         if code not in self.knownCodes:
-            # print("code " + str(code))
             exit(code)
 
         sys.stderr.write("Error! ")

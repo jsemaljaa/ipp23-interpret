@@ -1,14 +1,9 @@
 # Allowed libraries
 import sys
 import argparse
-import os
-import codecs
-import re
 
 # Implemented libraries with classes
-from lib.ReturnCodes import ReturnCodes as RC
 from lib.XMLParse import XMLParse
-from lib.DataStructures import *
 from lib.Instruction import *
 
 
@@ -19,7 +14,6 @@ class Interpret:
         self.__frames = Stack()
 
         self.__datastack = Stack()
-        self.__labels = {}
 
         self.__args_parser()
         self.__get_instructions_list()
@@ -95,10 +89,10 @@ class Interpret:
             return None
 
     def __label_exists(self, label) -> True | False:
-        return label in self.__labels
+        return label in self.__instructions.labels
 
     def __jump_to(self, label: str):
-        if label in self.__instructions.labels:
+        if self.__label_exists(label):
             self.__instructions.pos = self.__instructions.labels[label]
         else:
             RC().exit_e(RC.SEMANTIC)
@@ -111,7 +105,6 @@ class Interpret:
 
     def __get_variable(self, arg: Variable) -> Variable:
         frame = self.__get_frame(arg.frame)
-        # frame.get_var(arg.id).print()
         return frame.get_var(arg.id)
 
     def __set_variable(self, v: Variable):
@@ -126,6 +119,7 @@ class Interpret:
         self.__instructions = XML.get_instructions()
         self.__instructions.transform_list()
 
+
         # self.__instructions here is an Object with type InstructionsList
 
     def __interpret_start(self):
@@ -137,6 +131,7 @@ class Interpret:
                 break
 
             # instruction.print()
+            # print(self.__labels)
 
             if type(instruction) is CREATEFRAME:
                 self.__delete_frame()
@@ -152,7 +147,12 @@ class Interpret:
                 self.__instructions.return_pos()
 
             elif type(instruction) is BREAK:
-                pass
+                # Displays interpret state:
+                # 1) Global frame content
+                # 2) Code position
+                sys.stderr.write("Global frame content:\n")
+                self.__gframe.print()
+                sys.stderr.write("Position in code: {}\n".format(self.__instructions.pos))
 
             elif type(instruction) is DEFVAR:
                 var = instruction.args[0]

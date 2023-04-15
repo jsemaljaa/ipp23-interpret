@@ -1,5 +1,5 @@
-from lib.ReturnCodes import ReturnCodes as RC
 from lib.DataStructures import *
+import re
 
 
 class Instruction:
@@ -36,10 +36,11 @@ class Instruction:
             a.print()
             i += 1
 
-    def add_args_list(self, args: list):
+    def set_args(self, args: list):
         self.__args = args
 
-    def process_arg(self, type, value, order=None):
+    @staticmethod
+    def process_arg(type, value, order=None):
         arg = None
         if type == 'var':
             frame, id = value.split("@")

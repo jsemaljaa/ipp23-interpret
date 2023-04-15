@@ -46,8 +46,6 @@ class InstructionsList:
         self.__list = list(d.values())
 
     def get_next_instruction(self) -> Instruction | None:
-        # print("pos is " + str(self.__pos) + " size is " + str(self.__size))
-        # print(self.__list[1])
         if self.__pos > len(self.__list):
             return None
         else:
