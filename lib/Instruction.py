@@ -1,3 +1,5 @@
+import sys
+
 from lib.DataStructures import *
 import re
 
@@ -6,8 +8,9 @@ class Instruction:
     def __init__(self, order: int) -> None:
         self.__order = order
         self.__args = []
-        self.__check_order()
         self.__required = []
+
+        self.__check_order()
 
     @property
     def required(self):
@@ -26,13 +29,13 @@ class Instruction:
         return self.__args
 
     def print(self):
-        print("Instruction: " + str(type(self)) + " with order: " + str(self.__order))
+        sys.stderr.write("Instruction: \'{}\' with order: {}".format(str(type(self)), str(self.__order)))
         self.__print_args()
 
     def __print_args(self):
         i = 1
         for a in self.args:
-            print("\t" + str(i) + ". type: " + str(type(a)))
+            sys.stderr.write("\t{}. type: \'{}\'".format(str(i), str(type(a))))
             a.print()
             i += 1
 
@@ -170,7 +173,8 @@ class READ(Instruction):
         super().__init__(order)
         self.required = [Variable, Type]
 
-    def exec(self, input, reqType, v: Variable) -> Variable:
+    @staticmethod
+    def exec(input, reqType, v: Variable) -> Variable:
         if reqType == 'int':
             try:
                 v.value = int(input)

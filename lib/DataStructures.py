@@ -105,14 +105,14 @@ class Stack:
         return self.__items.pop()
 
     # Returns size of a stack
-    def size(self):
+    def size(self) -> int:
         return len(self.__items)
 
     # Returns object on top of the stack
     def top(self):
         return self.__items[-1]
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return self.size() == 0
 
     def print(self):
