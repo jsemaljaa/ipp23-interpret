@@ -19,8 +19,8 @@ class Interpret:
 
     def __parse_args(self):
         aparser = argparse.ArgumentParser()
-        aparser.add_argument("--source", nargs=1, help="Missing parameter with source file")
-        aparser.add_argument("--input", nargs=1, help="Missing parameter with input file")
+        aparser.add_argument("--source", nargs=1, help="Parameter with source file")
+        aparser.add_argument("--input", nargs=1, help="Parameter with input file")
 
         args = vars(aparser.parse_args())
 
@@ -213,5 +213,5 @@ class Interpret:
                 if instruction.exec(symb, symb2):
                     self.__jump_to(label)
 
-
-interpret = Interpret()
+if __name__ == '__main__':
+    interpret = Interpret()
