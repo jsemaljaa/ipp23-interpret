@@ -15,7 +15,7 @@ interprets it using input according to command line parameters and generates out
 | ------------- | ------------- |
 | ```--source```  | Parameter with file containing XML representation of source code   |
 | ```--input```  | Parameter with file with inputs for the actual interpretation of the specified source code  |
-| ```--help | -h]``` | Displays help message |
+| ```--help \| -h]``` | Displays help message |
 
 At least one of the parameters (--source or --input) must always be specified. If one of them is missing, the missing data is read from the standard input.
 
