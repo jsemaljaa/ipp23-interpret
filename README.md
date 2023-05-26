@@ -87,7 +87,7 @@ Proměnná\032GF@counter\032obsahuje\032\010Proměnná\032GF@counter\032obsahuje
 - Running errors (detection): **72%**
 - Interpretation of instructions: **80%**
 - Command line options: **70%**
-- Interpretation of non-trivial programs: **4%((
+- Interpretation of non-trivial programs: **4%**
 
 
 ### Total Score: 5.89/9.00 (**90%**)
