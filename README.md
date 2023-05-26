@@ -90,7 +90,7 @@ Proměnná\032GF@counter\032obsahuje\032\010Proměnná\032GF@counter\032obsahuje
 - Interpretation of non-trivial programs: **4%**
 
 
-### Total Score: 5.89/9.00 (**90%**)
+### Total Score: 5.89/9.00 (**64%**)
 2.65/3.00 for implementation documentation
 
 ## Final: 8.54/12.00
